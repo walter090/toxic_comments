@@ -8,7 +8,8 @@ def file_read_op(file_names):
         file_names: Python list of file names
 
     Returns:
-
+        comment_text: A tensor for comment text
+        toxicity: A tensor of one hot encoded toxicity
     """
     reader = tf.TextLineReader(skip_header_lines=1)
     queue = tf.train.string_input_producer(file_names)
@@ -18,5 +19,5 @@ def file_read_op(file_names):
     cols = tf.decode_csv(value, record_defaults=record_defaults)
 
     comment_text = cols[0]
-    toxcity = tf.stack(cols[1:])
-    return comment_text, toxcity
+    toxicity = tf.stack(cols[1:])
+    return comment_text, toxicity
