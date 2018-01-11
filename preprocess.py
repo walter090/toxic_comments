@@ -15,9 +15,9 @@ def file_read_op(file_names):
     queue = tf.train.string_input_producer(file_names)
 
     _, value = reader.read(queue)
-    record_defaults = [[''], [0], [0], [0], [0], [0], [0]]
+    record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0]]
     cols = tf.decode_csv(value, record_defaults=record_defaults)
 
-    comment_text = cols[0]
-    toxicity = tf.stack(cols[1:])
+    comment_text = cols[1]  # Skip id column
+    toxicity = tf.stack(cols[2:])
     return comment_text, toxicity
