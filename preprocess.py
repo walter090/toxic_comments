@@ -1,4 +1,9 @@
+import os
+
+import pandas as pd
 import tensorflow as tf
+
+from nltk.tokenize import RegexpTokenizer
 
 
 def file_read_op(file_names, batch_size, num_epochs):
@@ -30,3 +35,26 @@ def file_read_op(file_names, batch_size, num_epochs):
         [comment_text, toxicity], batch_size=batch_size,
         capacity=capacity, min_after_dequeue=min_after_dequeue)
     return comment_text_batch, toxicity_batch
+
+
+def tokenize_comments(file_name, chunk_size, saveto='preprocessed'):
+    """Tokenize the comment texts in the csv file.
+    In case of a large file, process the file in chunks and append
+    the chunks to new file.
+
+    Args:
+        file_name: String file name of the original csv file
+        chunk_size: Size of each chunk
+        saveto: Directory to save the new file to
+
+    Returns:
+        None
+    """
+    df_chunk = pd.read_csv(file_name, chunksize=chunk_size)
+    tokenizer = RegexpTokenizer(r'\w+')
+
+    for index, chunk in enumerate(df_chunk):
+        for _, entry in chunk.iterrows():
+            entry['comment'] = ' '.join(tokenizer.tokenize(entry['comment']))
+        mode = 'w' if index == 0 else 'a'
+        chunk.to_csv(os.path.join(saveto, file_name), index=False, mode=mode)
