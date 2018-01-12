@@ -37,12 +37,13 @@ def file_read_op(file_names, batch_size, num_epochs):
     return comment_text_batch, toxicity_batch
 
 
-def tokenize_comments(file_name, chunk_size, saveto='preprocessed'):
-    """Tokenize the comment texts in the csv file.
+def tokenize_comments(file_dir, file_name, chunk_size, saveto='preprocessed'):
+    """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
 
     Args:
+        file_dir: String directory of the file
         file_name: String file name of the original csv file
         chunk_size: Size of each chunk
         saveto: Directory to save the new file to
@@ -50,11 +51,22 @@ def tokenize_comments(file_name, chunk_size, saveto='preprocessed'):
     Returns:
         None
     """
-    df_chunk = pd.read_csv(file_name, chunksize=chunk_size)
+    df_chunk = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
     tokenizer = RegexpTokenizer(r'\w+')
+    saveto = os.path.join(file_dir, saveto)
+
+    if not os.path.exists(saveto):
+        os.makedirs(saveto)
 
     for index, chunk in enumerate(df_chunk):
-        for _, entry in chunk.iterrows():
-            entry['comment'] = ' '.join(tokenizer.tokenize(entry['comment']))
-        mode = 'w' if index == 0 else 'a'
-        chunk.to_csv(os.path.join(saveto, file_name), index=False, mode=mode)
+        for row, entry in chunk.iterrows():
+            chunk.at[row, 'comment_text'] = ' '.join(tokenizer.tokenize(entry['comment_text']))
+
+        if index == 0:
+            mode = 'w'
+            header = True
+        else:
+            mode = 'a'
+            header = False
+
+        chunk.to_csv(os.path.join(saveto, file_name), index=False, mode=mode, header=header)
