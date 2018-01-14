@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import tensorflow as tf
-
 from nltk.tokenize import RegexpTokenizer
 
 
