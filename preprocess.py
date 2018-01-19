@@ -1,8 +1,9 @@
 import os
+import string
 
+import nltk
 import pandas as pd
 import tensorflow as tf
-from nltk.tokenize import RegexpTokenizer
 
 
 def file_read_op(file_names, batch_size, num_epochs):
@@ -51,15 +52,20 @@ def tokenize_comments(file_dir, file_name, chunk_size, new_dir='tokenized'):
         None
     """
     df_chunk = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
-    tokenizer = RegexpTokenizer(r'\w+')
     new_dir = os.path.join(file_dir, new_dir)
+
+    punctuations = list(string.punctuation)
+    punctuations += ['``', "''"]
 
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
 
     for index, chunk in enumerate(df_chunk):
+        print('Tokenizing chunk {}'.format(index), end='...')
         for row, entry in chunk.iterrows():
-            chunk.at[row, 'comment_text'] = ' '.join(tokenizer.tokenize(entry['comment_text']))
+            word_list = nltk.word_tokenize(entry['comment_text'])
+            word_list = [word for word in word_list if word not in punctuations]
+            chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
             mode = 'w'
@@ -69,6 +75,7 @@ def tokenize_comments(file_dir, file_name, chunk_size, new_dir='tokenized'):
             header = False
 
         chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+    print('Tokenization complete.')
 
 
 def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_length=60):
@@ -85,7 +92,7 @@ def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_lengt
     Returns:
         None
     """
-    def pad(comment, pad_to, padword='zxw'):
+    def pad(comment, pad_to, padword='<pad>'):
         """This function does the actual padding on the comment string.
 
         Args:
@@ -117,3 +124,7 @@ def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_lengt
         save_to = os.path.join(file_dir, file_name)
 
     df.to_csv(save_to, index=False)
+
+
+def build_vocab():
+    raise NotImplementedError
