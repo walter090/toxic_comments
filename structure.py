@@ -114,3 +114,24 @@ def fully_conn(x,
             pass
 
         return output
+
+
+def embedding(ids, vocab_size, embedding_size, name='embedding'):
+    """ Function for embedding lookup
+
+    Args:
+        ids: Tensor, index id.
+        vocab_size: Int, vocabulary size.
+        embedding_size: Int, size of word vector.
+        name: String, operation name.
+
+    Returns:
+        embedded_word_exp: Tensor, word embedding
+    """
+    with tf.variable_scope(name):
+        weights = tf.get_variable(name='embedding_w',
+                                  shape=[vocab_size, embedding_size],
+                                  initializer=tf.random_uniform_initializer(-1, 1))
+        embedded_word_exp = tf.expand_dims(tf.nn.embedding_lookup(weights, ids), -1)
+
+        return embedded_word_exp
