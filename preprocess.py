@@ -4,6 +4,7 @@ import string
 import nltk
 import pandas as pd
 import tensorflow as tf
+from collections import defaultdict
 
 
 def file_read_op(file_names, batch_size, num_epochs):
@@ -126,5 +127,28 @@ def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_lengt
     df.to_csv(save_to, index=False)
 
 
-def build_vocab():
-    raise NotImplementedError
+def count_occurrences(file_name, chunk_size, padword='<pad>'):
+    """ Count occurrences of words in dataset.
+    Sort all uncommon words as unknown to teach the model to deal with unseen words
+    in the test set.
+
+    Args:
+        file_name: String, csv file name.
+        chunk_size: Int, size of each chunk.
+        padword: String, padding word used in the dataset.
+
+    Returns:
+        word_count: dict, Occurrences of each word.
+    """
+    df_chunk = pd.read_csv(file_name, chunksize=chunk_size)
+    word_count = defaultdict(lambda: 0)
+
+    for chunk in df_chunk:
+        for row, entry in chunk.iterrows():
+            comment_text = entry['comment_text'].split(' ')
+            for word in comment_text:
+                if word_count != padword:
+                    word_count[word] += 1
+
+    word_count = dict(word_count)
+    return word_count
