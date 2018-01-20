@@ -116,11 +116,10 @@ def fully_conn(x,
         return output
 
 
-def embedding(ids, vocab_size, embedding_size, name='embedding'):
-    """ Function for embedding lookup
+def embedding(vocab_size, embedding_size, name='embedding'):
+    """ Create embedding
 
     Args:
-        ids: Tensor, index id.
         vocab_size: Int, vocabulary size.
         embedding_size: Int, size of word vector.
         name: String, operation name.
@@ -132,9 +131,7 @@ def embedding(ids, vocab_size, embedding_size, name='embedding'):
         weights = tf.get_variable(name='embedding_w',
                                   shape=[vocab_size, embedding_size],
                                   initializer=tf.random_uniform_initializer(-1, 1))
-        embedded_word_exp = tf.expand_dims(tf.nn.embedding_lookup(weights, ids), -1)
-
-        return embedded_word_exp
+        return weights
 
 
 def file_read_op(file_names, batch_size, num_epochs):
