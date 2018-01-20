@@ -2,7 +2,6 @@ import os
 import string
 
 import nltk
-import numpy as np
 import pandas as pd
 import tensorflow as tf
 from collections import defaultdict
@@ -41,16 +40,17 @@ def file_read_op(file_names, batch_size, num_epochs):
     return comment_text_batch, toxicity_batch
 
 
-def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized'):
+def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized', lower_case=True):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
 
     Args:
-        file_dir: String directory of the file.
-        file_name: String file name of the original csv file.
-        chunk_size: Size of each chunk.
-        new_dir: Directory to save the new file to.
+        file_dir: string, directory of the file.
+        file_name: string, file name of the original csv file.
+        chunk_size: int, size of each chunk.
+        new_dir: dict, directory to save the new file to.
+        lower_case: boolean, set True to convert all words to lower case.
 
     Returns:
         None
@@ -68,7 +68,7 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized'
         print('Tokenizing chunk {}'.format(index), end='...')
         for row, entry in chunk.iterrows():
             word_list = nltk.word_tokenize(entry['comment_text'])
-            word_list = [word for word in word_list if word not in punctuations]
+            word_list = [word if not lower_case else word.lower() for word in word_list if word not in punctuations]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
@@ -157,7 +157,7 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
 
 
 def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modify=False,
-                file_dir=None, file_name=None, new_dir=None, chunk_size=20000):
+                file_dir=None, file_name=None, new_dir=None, chunk_size=20000, uncommon_limit=500):
     """Build a vocabulary based on words that appear in the training set.
     Words with number of occurrences below the threshold is sorted as unknown,
     this teaches the model the handel unseen words in the testing set.
@@ -175,6 +175,7 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
         new_dir: string, set the argument only if you want to save the modified csv as
              a new file to a sub dir.
         chunk_size: int, size of each chunk when reading csv.
+        uncommon_limit: int, size limit of the uncommon word list.
 
     Returns:
         vocab: dict, vocabulary mapping.
@@ -187,8 +188,9 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
     for index, (word, occurrences) in enumerate(word_count.items()):
         if occurrences > threshold:
             vocab[word] = index
-        else:
+        elif len(uncommon) < uncommon_limit:
             uncommon.append(word)
+
     # Create reverse mapping vocabulary.
     reverse_vocab = {id_: word for word, id_ in vocab.items()}
 
@@ -201,13 +203,16 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
             os.makedirs(new_dir)
 
         df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
+        processes = cpu_count()
+
         for index, chunk in enumerate(df_chunks):
             print('Processing chunk {}'.format(index), end='...')
 
-            processes = cpu_count()
             with Pool(processes) as pool:
-                chunk_splits = np.split(chunk, processes)
-                pool.starmap(_find_replace, zip(chunk_splits, repeat(uncommon), repeat(unknown)))
+                step = chunk_size // processes
+                chunk_splits = [chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+                results = pool.starmap(_find_replace, zip(chunk_splits, repeat(uncommon), repeat(unknown)))
+                chunk = pd.concat(results)
 
             if index == 0:
                 mode = 'w'
@@ -224,9 +229,9 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
 
 def _find_replace(df, uncommon, unknown):
     """Helper function for building vocabulary
-
     """
     for row, entry in df.iterrows():
         comment_text = entry['comment_text'].split(' ')
         comment_text = [word if word not in uncommon else unknown for word in comment_text]
         df.at[row, 'comment_text'] = ' '.join(comment_text)
+    return df
