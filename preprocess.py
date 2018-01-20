@@ -2,9 +2,12 @@ import os
 import string
 
 import nltk
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 from collections import defaultdict
+from itertools import repeat
+from multiprocessing import cpu_count, Pool
 
 
 def file_read_op(file_names, batch_size, num_epochs):
@@ -200,10 +203,11 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
         df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
         for index, chunk in enumerate(df_chunks):
             print('Processing chunk {}'.format(index), end='...')
-            for row, entry in chunk.iterrows():
-                comment_text = entry['comment_text'].split(' ')
-                comment_text = [word if word not in uncommon else unknown for word in comment_text]
-                chunk.at[row, 'comment_text'] = ' '.join(comment_text)
+
+            processes = cpu_count()
+            with Pool(processes) as pool:
+                chunk_splits = np.split(chunk, processes)
+                pool.starmap(_find_replace, zip(chunk_splits, repeat(uncommon), repeat(unknown)))
 
             if index == 0:
                 mode = 'w'
@@ -216,3 +220,13 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
         print('Complete')
 
     return vocab, reverse_vocab
+
+
+def _find_replace(df, uncommon, unknown):
+    """Helper function for building vocabulary
+
+    """
+    for row, entry in df.iterrows():
+        comment_text = entry['comment_text'].split(' ')
+        comment_text = [word if word not in uncommon else unknown for word in comment_text]
+        df.at[row, 'comment_text'] = ' '.join(comment_text)
