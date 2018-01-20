@@ -38,7 +38,7 @@ def file_read_op(file_names, batch_size, num_epochs):
     return comment_text_batch, toxicity_batch
 
 
-def tokenize_comments(file_dir, file_name, chunk_size, new_dir='tokenized'):
+def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized'):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
@@ -127,7 +127,7 @@ def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_lengt
     df.to_csv(save_to, index=False)
 
 
-def count_occurrences(file_name, chunk_size, padword='<pad>'):
+def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
     """ Count occurrences of words in dataset.
     Sort all uncommon words as unknown to teach the model to deal with unseen words
     in the test set.
@@ -140,15 +140,79 @@ def count_occurrences(file_name, chunk_size, padword='<pad>'):
     Returns:
         word_count: dict, Occurrences of each word.
     """
-    df_chunk = pd.read_csv(file_name, chunksize=chunk_size)
+    df_chunks = pd.read_csv(file_name, chunksize=chunk_size)
     word_count = defaultdict(lambda: 0)
 
-    for chunk in df_chunk:
-        for row, entry in chunk.iterrows():
+    for chunk in df_chunks:
+        for _, entry in chunk.iterrows():
             comment_text = entry['comment_text'].split(' ')
             for word in comment_text:
                 if word_count != padword:
                     word_count[word] += 1
 
-    word_count = dict(word_count)
-    return word_count
+    return dict(word_count)
+
+
+def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modify=False,
+                file_dir=None, file_name=None, new_dir=None, chunk_size=20000):
+    """Build a vocabulary based on words that appear in the training set.
+    Words with number of occurrences below the threshold is sorted as unknown,
+    this teaches the model the handel unseen words in the testing set.
+
+    Args:
+        word_count: dict, dictionary that maps a word to its number of occurrences.
+        threshold: int, words with number of occurrences below this threshold is
+            considered uncommon and not added to the vocabulary.
+        padword: string, string value used as a padding word.
+        unknown: string, string value to designate unknown words.
+        modify: int, set True to modify csv file (replace less common words with
+            unknown tag).
+        file_dir: string, dir of base csv file.
+        file_name: string, file name of base csv file.
+        new_dir: string, set the argument only if you want to save the modified csv as
+             a new file to a sub dir.
+        chunk_size: int, size of each chunk when reading csv.
+
+    Returns:
+        vocab: dict, vocabulary mapping.
+        reverse_vocab: dict, reversed vocabulary mapping.
+        or None if mode 2 is selected.
+    """
+    vocab = {unknown: -2, padword: -1}
+    uncommon = []
+
+    for index, (word, occurrences) in enumerate(word_count.items()):
+        if occurrences > threshold:
+            vocab[word] = index
+        else:
+            uncommon.append(word)
+    # Create reverse mapping vocabulary.
+    reverse_vocab = {id_: word for word, id_ in vocab.items()}
+
+    if modify:
+        if not file_dir and not file_name:
+            raise ValueError('Arguments file_dir and file_name are required.')
+
+        new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
+
+        df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
+        for index, chunk in enumerate(df_chunks):
+            print('Processing chunk {}'.format(index), end='...')
+            for row, entry in chunk.iterrows():
+                comment_text = entry['comment_text'].split(' ')
+                comment_text = [word if word not in uncommon else unknown for word in comment_text]
+                chunk.at[row, 'comment_text'] = ' '.join(comment_text)
+
+            if index == 0:
+                mode = 'w'
+                header = True
+            else:
+                mode = 'a'
+                header = False
+            chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+
+        print('Complete')
+
+    return vocab, reverse_vocab
