@@ -20,14 +20,29 @@ def property_wrap(attr):
 
 
 class ToxicityCNN:
-    def __init__(self):
-        self.comment_batch = None
-        self.toxicity_batch = None
+    def __init__(self, csvs=None, batch_size=None, num_epochs=None,
+                 vocab_size=None, embedding_size=None):
+        """
+        Args:
+            csvs: list, a list of strings that are names of csv files to be used
+                as dataset.
+            batch_size: int, size of each batch.
+            num_epochs: int, number of epochs.
+            vocab_size: int, vocabulary size for the word embeddings.
+            embedding_size: int, size of each word vector.
+        """
+        self.comment_batch, self.toxicity_batch = None, None
         self.embeddings = None
 
         self._prediction = None
         self._optimizer = None
         self._error = None
+
+        if csvs and batch_size and num_epochs:
+            self.file_read_op(csvs, batch_size, num_epochs)
+
+        if vocab_size and embedding_size:
+            self.create_embedding(vocab_size, embedding_size)
 
     def file_read_op(self, file_names, batch_size, num_epochs):
         """Read csv files in batch
@@ -66,7 +81,7 @@ class ToxicityCNN:
             name: String, operation name.
 
         Returns:
-            embedded_word_exp: Tensor, word embedding
+            None
         """
         with tf.variable_scope(name):
             self.embeddings = tf.get_variable(name='embedding_w',
