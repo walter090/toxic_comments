@@ -1,11 +1,12 @@
 import os
+import pickle
 import string
-
-import nltk
-import pandas as pd
 from collections import defaultdict
 from itertools import repeat
 from multiprocessing import cpu_count, Pool
+
+import nltk
+import pandas as pd
 
 
 def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized', lower_case=True):
@@ -64,6 +65,7 @@ def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_lengt
     Returns:
         None
     """
+
     def pad(comment, pad_to, padword='<pad>'):
         """This function does the actual padding on the comment string.
 
@@ -125,7 +127,8 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
 
 
 def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modify=False,
-                file_dir=None, file_name=None, new_dir=None, chunk_size=20000, uncommon_limit=500):
+                file_dir=None, file_name=None, new_dir=None, chunk_size=20000, uncommon_limit=500,
+                pickle_dir=None):
     """Build a vocabulary based on words that appear in the training set.
     Words with number of occurrences below the threshold is sorted as unknown,
     this teaches the model the handel unseen words in the testing set.
@@ -144,6 +147,8 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
              a new file to a sub dir.
         chunk_size: int, size of each chunk when reading csv.
         uncommon_limit: int, size limit of the uncommon word list.
+        pickle_dir: string, name of directory to store pickeled lookup dictionaries.
+            the dictionary is not saved if a value is not provided. Defaults None.
 
     Returns:
         vocab: dict, vocabulary mapping.
@@ -162,13 +167,13 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
     # Create reverse mapping vocabulary.
     reverse_vocab = {id_: word for word, id_ in vocab.items()}
 
+    new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
+    if not os.path.exists(new_dir):
+        os.makedirs(new_dir)
+
     if modify:
         if not file_dir and not file_name:
             raise ValueError('Arguments file_dir and file_name are required.')
-
-        new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
-        if not os.path.exists(new_dir):
-            os.makedirs(new_dir)
 
         df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
         processes = cpu_count()
@@ -192,6 +197,10 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
 
         print('Complete')
 
+    if pickle_dir:
+        with open(os.path.join(pickle_dir, 'vocabulary.pickle')) as saver:
+            pickle.dump((vocab, reverse_vocab), saver, protocol=pickle.HIGHEST_PROTOCOL)
+
     return vocab, reverse_vocab
 
 
@@ -203,3 +212,10 @@ def _find_replace(df, uncommon, unknown):
         comment_text = [word if word not in uncommon else unknown for word in comment_text]
         df.at[row, 'comment_text'] = ' '.join(comment_text)
     return df
+
+
+def translate(file_dir, file_name, new_dir=None, chunk_size=40000, word_to_id=True):
+    df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
+    new_dir = os.path.join(file_dir, new_dir, file_name) if new_dir else\
+        os.path.join(file_dir, file_name)
+    raise NotImplementedError
