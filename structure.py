@@ -90,7 +90,7 @@ def fully_conn(x,
         activation: Set to True to add a leaky relu after fully connected
             layer. Set this argument to False if this is the final layer.
         keep_prob: Keep probability for dropout layers, if keep probability is 1
-            there is no dropout. Defaults 1.s
+            there is no dropout. Defaults 1.
 
     Returns:
         Output tensor.
