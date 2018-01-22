@@ -20,8 +20,8 @@ def property_wrap(attr):
 
 
 class ToxicityCNN:
-    def __init__(self, csvs=None, batch_size=None, num_epochs=None,
-                 vocab_size=None, embedding_size=None):
+    def __init__(self, csvs=None, batch_size=None,
+                 num_epochs=None, vocab_size=None, embedding_size=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -35,6 +35,8 @@ class ToxicityCNN:
         self.comment_length = None
         self.comment_batch, self.toxicity_batch = None, None
         self.embeddings = None
+        self.embedding_size = embedding_size
+        self.vocab_size = vocab_size
 
         self._prediction = None
         self._optimizer = None
@@ -46,7 +48,8 @@ class ToxicityCNN:
         if not (vocab_size and embedding_size):
             self._create_embedding(vocab_size, embedding_size)
 
-    def _file_read_op(self, file_names, batch_size, num_epochs):
+    def _file_read_op(self, file_names, batch_size,
+                      num_epochs):
         """Read csv files in batch
 
         Args:
@@ -74,7 +77,8 @@ class ToxicityCNN:
             [comment_text, toxicity], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
 
-    def _create_embedding(self, vocab_size, embedding_size, name='embedding'):
+    def _create_embedding(self, vocab_size, embedding_size,
+                          name='embedding'):
         """ Create embedding
 
         Args:
@@ -85,13 +89,18 @@ class ToxicityCNN:
         Returns:
             None
         """
+        self.vocab_size = vocab_size
+        self.embedding_size = embedding_size
+
         with tf.variable_scope(name):
             self.embeddings = tf.get_variable(name='embedding_w',
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
 
-    def network(self, x_input, layer_config=None, fully_conn_config=None,
-                name='network', padding='VALID', reuse_variables=False):
+    def _network(self, x_input, num_output,
+                 layer_config=None, fully_conn_config=None, pool='max',
+                 name='network', padding='VALID', batchnorm=True,
+                 reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
         to the config lists.
@@ -101,15 +110,71 @@ class ToxicityCNN:
             layer_config: list, a list that contains configuration for each layer.
             fully_conn_config: list, a list that contains configuration for each fully connected
                 layer.
+            pool: string, pooling method.
             name: string, name for the network.
             padding: string, specify padding method used by convolution. Choose from SAME and
                 VALID, defaults VALID.
+            batchnorm: boolean, set True to use batch normalization.
             reuse_variables: boolean, Set to True to reuse weights and biases.
 
         Returns:
             output: Tensor, output tensor from the network.
         """
-        raise NotImplementedError
+
+        def pool_size(ksize):
+            return self.comment_length - ksize + 1
+
+        with tf.variable_scope(name, reuse=reuse_variables):
+            layer_config = [
+                # Convolution layer configuration
+                # ksize, stride, out_channels, pool_ksize, pool_stride
+                [
+                    [2, 1, 256, pool_size(2), 1],
+                ],
+                [
+                    [3, 1, 256, pool_size(3), 1],
+                ],
+                [
+                    [4, 1, 256, pool_size(4), 1],
+                ],
+                [
+                    [5, 1, 256, pool_size(5), 1],
+                ],
+            ] if not layer_config else layer_config
+
+            fully_conn_config = [
+                [1024, 'lrelu', 0.5],
+                [512, 'lrelu', 0.5],
+            ] if not fully_conn_config else fully_conn_config
+
+            outputs = []
+            pool_output = x_input
+
+            for config_i, config in enumerate(layer_config):
+                for layer_i, layer in enumerate(config):
+                    pool_output = structure.conv_pool(
+                        pool_output, ksize=[self.embedding_size, layer[0]],
+                        stride=[1, layer[1]], out_channels=layer[2],
+                        pool_ksize=[self.embedding_size, layer[3]],
+                        pool_stride=[1, layer[4]], alpha=0.1,
+                        padding=padding, batchnorm=batchnorm,
+                        method=pool, name='conv_{}_{}'.format(config_i, layer_i))
+
+                outputs.append(pool_output)
+
+        pool_concat = tf.concat(outputs, axis=3)
+        output_flat = structure.flatten(pool_concat)
+
+        output_fully_conn = output_flat
+
+        for layer_i, layer in enumerate(fully_conn_config):
+            output_fully_conn = structure.fully_conn(output_fully_conn, num_output=layer[0],
+                                                     activation=layer[1], keep_prob=layer[2],
+                                                     name='fc_{}'.format(layer_i))
+
+        output = structure.fully_conn(output_fully_conn, num_output=num_output,
+                                      name='fc_out', activation='sigmoid')
+        return output
 
     @property_wrap('_prediction')
     def predict(self):
