@@ -31,6 +31,8 @@ class ToxicityCNN:
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
         """
+        self.num_labels = None
+        self.comment_length = None
         self.comment_batch, self.toxicity_batch = None, None
         self.embeddings = None
 
@@ -38,10 +40,10 @@ class ToxicityCNN:
         self._optimizer = None
         self._error = None
 
-        if csvs and batch_size and num_epochs:
+        if not (csvs and batch_size and num_epochs):
             self._file_read_op(csvs, batch_size, num_epochs)
 
-        if vocab_size and embedding_size:
+        if not (vocab_size and embedding_size):
             self._create_embedding(vocab_size, embedding_size)
 
     def _file_read_op(self, file_names, batch_size, num_epochs):
@@ -88,16 +90,29 @@ class ToxicityCNN:
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
 
-    def network(self, layer_config, fully_conn_config, name='network'):
-        # TODO implement network
+    def network(self, x_input, layer_config=None, fully_conn_config=None,
+                name='network', padding='VALID', reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
         to the config lists.
+
+        Args:
+            x_input: Tensor, input tensor to the network.
+            layer_config: list, a list that contains configuration for each layer.
+            fully_conn_config: list, a list that contains configuration for each fully connected
+                layer.
+            name: string, name for the network.
+            padding: string, specify padding method used by convolution. Choose from SAME and
+                VALID, defaults VALID.
+            reuse_variables: boolean, Set to True to reuse weights and biases.
+
+        Returns:
+            output: Tensor, output tensor from the network.
         """
         raise NotImplementedError
 
     @property_wrap('_prediction')
-    def predict(self, x_input, model):
+    def predict(self):
         # TODO implement predict
         raise NotImplementedError
 
