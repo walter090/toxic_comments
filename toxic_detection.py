@@ -39,12 +39,12 @@ class ToxicityCNN:
         self._error = None
 
         if csvs and batch_size and num_epochs:
-            self.file_read_op(csvs, batch_size, num_epochs)
+            self._file_read_op(csvs, batch_size, num_epochs)
 
         if vocab_size and embedding_size:
-            self.create_embedding(vocab_size, embedding_size)
+            self._create_embedding(vocab_size, embedding_size)
 
-    def file_read_op(self, file_names, batch_size, num_epochs):
+    def _file_read_op(self, file_names, batch_size, num_epochs):
         """Read csv files in batch
 
         Args:
@@ -72,7 +72,7 @@ class ToxicityCNN:
             [comment_text, toxicity], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
 
-    def create_embedding(self, vocab_size, embedding_size, name='embedding'):
+    def _create_embedding(self, vocab_size, embedding_size, name='embedding'):
         """ Create embedding
 
         Args:
@@ -88,14 +88,25 @@ class ToxicityCNN:
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
 
+    def network(self, layer_config, fully_conn_config, name='network'):
+        # TODO implement network
+        """This is where the neural net is implemented. Each of the config is a list,
+        each element for one layer. Inception is available by adding more dimensions
+        to the config lists.
+        """
+        raise NotImplementedError
+
     @property_wrap('_prediction')
-    def predict(self):
+    def predict(self, x_input, model):
+        # TODO implement predict
         raise NotImplementedError
 
     @property_wrap('_optimizer')
     def optimize(self):
+        # TODO implement optimize
         raise NotImplementedError
 
     @property_wrap('_error')
     def geterror(self):
+        # TODO implement geterror
         raise NotImplementedError
