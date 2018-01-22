@@ -114,3 +114,32 @@ def fully_conn(x,
             pass
 
         return output
+
+
+def batch_normalize(x, epsilon=1e-5):
+    """Batch normalization for the network.
+
+    Args:
+        x: Input tensor from the previous layer.
+        epsilon: Variance epsilon.
+
+    Returns:
+        Output tensor.
+    """
+    # Before activation
+    with tf.variable_scope('batch_norm'):
+        mean, variance = tf.nn.moments(x, axes=[0, 1, 2])
+
+        scale = tf.get_variable('bn_scale',
+                                shape=[x.get_shape().as_list()[-1]],
+                                initializer=tf.ones_initializer())
+        offset = tf.get_variable('bn_bias',
+                                 shape=[x.get_shape().as_list()[-1]],
+                                 initializer=tf.zeros_initializer())
+        normalized = tf.nn.batch_normalization(x=x,
+                                               mean=mean,
+                                               variance=variance,
+                                               offset=offset,
+                                               scale=scale,
+                                               variance_epsilon=epsilon)
+        return normalized
