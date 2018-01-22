@@ -2,8 +2,10 @@ import numpy as np
 import tensorflow as tf
 
 
-def conv_pool(x, ksize=None, stride=None, out_channels=None, pool_ksize=None, pool_stride=None,
-              alpha=0.1, padding='VALID', batchnorm=True, method='max', name='conv'):
+def conv_pool(x, ksize=None, stride=None,
+              out_channels=None, pool_ksize=None, pool_stride=None,
+              alpha=0.1, padding='VALID', batchnorm=True,
+              method='max', name='conv'):
     """Convolution layer with pooling
 
     Args:
@@ -98,11 +100,8 @@ def flatten(x):
     return tf.reshape(x, shape=[-1, np.prod(x.get_shape().as_list()[1:])])
 
 
-def fully_conn(x,
-               num_output,
-               name='fc',
-               activation='lrelu',
-               keep_prob=1.):
+def fully_conn(x, num_output, name='fc',
+               activation='lrelu', keep_prob=1.):
     """Fully connected layer, this is is last parts of convnet.
     Fully connect layer requires each image in the batch be flattened.
 
