@@ -2,16 +2,22 @@ import numpy as np
 import tensorflow as tf
 
 
-def conv(x, ksize, stride, out_channels, name='conv', padding='VALID'):
-    """Convolution layer
+def conv_pool(x, ksize=None, stride=None, out_channels=None, pool_ksize=None, pool_stride=None,
+              alpha=0.1, padding='VALID', batchnorm=True, method='max', name='conv'):
+    """Convolution layer with pooling
 
     Args:
-        x: Input tensor
-        ksize: Filter size
-        stride: Stride size
-        out_channels: Number of filters
-        name: String name of op
-        padding: String padding method, defaults 'VALID'
+        x: Input from the previous layer.
+        ksize: tuple, filter size.
+        stride: Stride for the convolution layer.
+        out_channels: Out channels for the convnet.
+        pool_ksize: Filter size for the average pooling layer.
+        pool_stride: Stride for the average pooling layer.
+        alpha: Parameter for Leaky ReLU.
+        name: Name of the variable scope.
+        padding: Padding for the layers, default 'VALID'.
+        batchnorm: Set True to use batch normalization.
+        method: string, set to max to use max pooling, avg to use average pooling.
 
     Returns:
         Convoluted tensor
@@ -30,7 +36,24 @@ def conv(x, ksize, stride, out_channels, name='conv', padding='VALID'):
                                        strides=stride, padding=padding)
         convoluted = tf.nn.bias_add(convoluted, bias)
 
-        return convoluted
+        if batchnorm:
+            convoluted = batch_normalize(convoluted)
+
+        output = lrelu(convoluted, alpha)
+
+        if pool_ksize and pool_stride:
+            pool_ksize = (1,) + pool_ksize + (1,)
+            pool_stride = (1,) + pool_stride + (1,)
+
+            if method == 'avg':
+                output = tf.nn.avg_pool(output, ksize=pool_ksize,
+                                        strides=pool_stride, padding=padding)
+            elif method == 'max':
+                output = tf.nn.max_pool(output, ksize=pool_ksize,
+                                        strides=pool_stride, padding=padding)
+            else:
+                raise ValueError("Choose a pooling method between 'max' and 'avg.'")
+        return output
 
 
 def lrelu(x, alpha=0.1):
