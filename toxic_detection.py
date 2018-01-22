@@ -4,7 +4,7 @@ from functools import wraps
 
 
 def property_wrap(attr):
-    """Checks if the function has already be called"""
+    """Checks if the function has already been called"""
 
     def de_facto_wrap(func):
         @property
@@ -21,7 +21,8 @@ def property_wrap(attr):
 
 class ToxicityCNN:
     def __init__(self, csvs=None, batch_size=None,
-                 num_epochs=None, vocab_size=None, embedding_size=None):
+                 num_epochs=None, vocab_size=None, embedding_size=None,
+                 num_output=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -37,29 +38,33 @@ class ToxicityCNN:
         self.embeddings = None
         self.embedding_size = embedding_size
         self.vocab_size = vocab_size
+        self.num_output = num_output
 
         self._prediction = None
         self._optimizer = None
         self._error = None
 
-        if not (csvs and batch_size and num_epochs):
-            self._file_read_op(csvs, batch_size, num_epochs)
+        if csvs and batch_size and num_epochs and num_output:
+            self._file_read_op(csvs, batch_size, num_output, num_epochs)
 
-        if not (vocab_size and embedding_size):
+        if vocab_size and embedding_size:
             self._create_embedding(vocab_size, embedding_size)
 
     def _file_read_op(self, file_names, batch_size,
-                      num_epochs):
+                      num_labels, num_epochs):
         """Read csv files in batch
 
         Args:
-            file_names: List of file names.
-            batch_size: Int, batch size.
-            num_epochs: Int, number of epochs.
+            file_names: list, list of file names.
+            batch_size: int, batch size.
+            num_labels: int, number of labels.
+            num_epochs: int, number of epochs.
 
         Returns:
             None
         """
+        self.num_output = num_labels
+
         reader = tf.TextLineReader(skip_header_lines=1)
         queue = tf.train.string_input_producer(file_names,
                                                num_epochs=num_epochs,
@@ -97,16 +102,17 @@ class ToxicityCNN:
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
 
-    def _network(self, x_input, num_output,
-                 layer_config=None, fully_conn_config=None, pool='max',
-                 name='network', padding='VALID', batchnorm=True,
-                 reuse_variables=False):
+    def network(self, x_input, num_output,
+                layer_config=None, fully_conn_config=None, pool='max',
+                name='network', padding='VALID', batchnorm=True,
+                reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
         to the config lists.
 
         Args:
             x_input: Tensor, input tensor to the network.
+            num_output: int, size of final output from the output layer.
             layer_config: list, a list that contains configuration for each layer.
             fully_conn_config: list, a list that contains configuration for each fully connected
                 layer.
