@@ -37,7 +37,8 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized'
         print('Tokenizing chunk {}'.format(index), end='...')
         for row, entry in chunk.iterrows():
             word_list = nltk.word_tokenize(entry['comment_text'])
-            word_list = [word if not lower_case else word.lower() for word in word_list if word not in punctuations]
+            word_list = [word if not lower_case else word.lower() for word in word_list if
+                         word not in punctuations]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
@@ -159,7 +160,7 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
     uncommon = []
 
     for index, (word, occurrences) in enumerate(word_count.items()):
-        if occurrences > threshold:
+        if occurrences > threshold and word != padword:
             vocab[word] = index
         elif len(uncommon) < uncommon_limit:
             uncommon.append(word)
@@ -198,7 +199,7 @@ def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modif
         print('Complete')
 
     if pickle_dir:
-        with open(os.path.join(pickle_dir, 'vocabulary.pickle')) as saver:
+        with open(os.path.join(pickle_dir, 'vocabulary.pickle'), 'wb') as saver:
             pickle.dump((vocab, reverse_vocab), saver, protocol=pickle.HIGHEST_PROTOCOL)
 
     return vocab, reverse_vocab
@@ -214,8 +215,72 @@ def _find_replace(df, uncommon, unknown):
     return df
 
 
-def translate(file_dir, file_name, new_dir=None, chunk_size=40000, word_to_id=True):
+def translate(file_dir, file_name, vocabulary, new_dir=None, chunk_size=40000,
+              word_to_id=True, unknown='<unk>'):
+    """Translate text in csv file either from word to id or id to word.
+
+    Args:
+        file_dir: string, directory where the csv file is found.
+        file_name: string, name of the csv file.
+        vocabulary: string or tuple, vocabulary look up table. If this model is
+            provided as a string, it is location the pickle file is stored; otherwise,
+            it is a tuple the contains the vocabulary and the reverse lookup.
+        new_dir: string, directory to save the modified csv file. If this argument is
+            not provided the csv file is changed in place.
+        chunk_size: int, size of each chunk.
+        word_to_id: boolean, set to False to translate from id to string word.
+        unknown: string, designator for unseen words.
+
+    Returns:
+        None.
+    """
     df_chunks = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
-    new_dir = os.path.join(file_dir, new_dir, file_name) if new_dir else\
-        os.path.join(file_dir, file_name)
-    raise NotImplementedError
+    new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
+    processes = cpu_count()
+
+    if word_to_id.__class__.__name__ == 'str':
+        with open(vocabulary, 'rb') as loader:
+            vocab = pickle.load(loader)
+    else:
+        vocab = vocabulary
+
+    if not os.path.exists(new_dir):
+        os.makedirs(new_dir)
+
+    for index, chunk in enumerate(df_chunks):
+        print('Translating chunk {}'.format(index), end='...')
+
+        with Pool(processes) as pool:
+            step = chunk_size // processes
+            chunk_splits = [chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+            results = pool.starmap(_translate_comment, zip(chunk_splits, repeat(word_to_id),
+                                                           repeat(vocab), repeat(unknown)))
+            chunk = pd.concat(results)
+
+        if index == 0:
+            mode = 'w'
+            header = True
+        else:
+            mode = 'a'
+            header = False
+        chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+
+    print('Complete')
+
+
+def _translate_comment(df, word_to_id, vocab, unknown):
+    """Helper function for translating csv files
+    """
+    translation_table = vocab[0] if word_to_id else vocab[1]
+    for row, entry in df.iterrows():
+        comment_text = entry['comment_text'].split(' ')
+        translated_comment = []
+        for word in comment_text:
+            try:
+                translated_word = str(translation_table[word])
+            except KeyError:
+                translated_word = str(translation_table[unknown])
+            translated_comment.append(translated_word)
+
+        df.at[row, 'comment_text'] = ' '.join(translated_comment)
+    return df
