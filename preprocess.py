@@ -9,7 +9,8 @@ import nltk
 import pandas as pd
 
 
-def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized', lower_case=True):
+def tokenize_comments(file_dir, file_name, chunk_size=20000,
+                      new_dir='tokenized', lower_case=True):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
@@ -52,7 +53,8 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000, new_dir='tokenized'
     print('Tokenization complete.')
 
 
-def add_padding(file_dir, file_name, new_file=False, new_dir='padded', max_length=60):
+def add_padding(file_dir, file_name, new_file=False,
+                new_dir='padded', max_length=60):
     """Add padding or cut off comments to make sure all the comments have the same length.
 
     Args:
@@ -127,9 +129,10 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
     return dict(word_count)
 
 
-def build_vocab(word_count, threshold=3, padword='<pad>', unknown='<unk>', modify=False,
-                file_dir=None, file_name=None, new_dir=None, chunk_size=20000, uncommon_limit=500,
-                pickle_dir=None):
+def build_vocab(word_count, threshold=3, padword='<pad>',
+                unknown='<unk>', modify=False, file_dir=None,
+                file_name=None, new_dir=None, chunk_size=20000,
+                uncommon_limit=500, pickle_dir=None):
     """Build a vocabulary based on words that appear in the training set.
     Words with number of occurrences below the threshold is sorted as unknown,
     this teaches the model the handel unseen words in the testing set.
@@ -215,8 +218,9 @@ def _find_replace(df, uncommon, unknown):
     return df
 
 
-def translate(file_dir, file_name, vocabulary, new_dir=None, chunk_size=40000,
-              word_to_id=True, unknown='<unk>'):
+def translate(file_dir, file_name, vocabulary,
+              new_dir=None, chunk_size=40000, word_to_id=True,
+              unknown='<unk>'):
     """Translate text in csv file either from word to id or id to word.
 
     Args:
@@ -268,7 +272,8 @@ def translate(file_dir, file_name, vocabulary, new_dir=None, chunk_size=40000,
     print('Complete')
 
 
-def _translate_comment(df, word_to_id, vocab, unknown):
+def _translate_comment(df, word_to_id, vocab,
+                       unknown):
     """Helper function for translating csv files
     """
     translation_table = vocab[0] if word_to_id else vocab[1]
