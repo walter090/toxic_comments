@@ -47,13 +47,13 @@ class ToxicityCNN:
         self._prediction = None
 
         if csvs and batch_size and num_epochs and num_labels:
-            self._file_read_op(csvs, batch_size, num_labels, num_epochs)
+            self.file_read_op(csvs, batch_size, num_labels, num_epochs)
 
         if vocab_size and embedding_size:
-            self._create_embedding(vocab_size, embedding_size)
+            self.create_embedding(vocab_size, embedding_size)
 
-    def _file_read_op(self, file_names, batch_size,
-                      num_labels, num_epochs):
+    def file_read_op(self, file_names, batch_size,
+                     num_labels, num_epochs):
         """Read csv files in batch
 
         Args:
@@ -84,8 +84,8 @@ class ToxicityCNN:
             [comment_text, toxicity], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
 
-    def _create_embedding(self, vocab_size, embedding_size,
-                          name='embedding'):
+    def create_embedding(self, vocab_size, embedding_size,
+                         name='embedding'):
         """ Create embedding
 
         Args:
