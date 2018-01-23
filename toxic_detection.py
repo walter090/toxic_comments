@@ -211,11 +211,13 @@ class ToxicityCNN:
 
     @property_wrap('_optimize')
     def optimize(self):
+        global_step = tf.Variable(0, trainable=False, name='global_step')
+
         optimizer = tf.train.AdamOptimizer(1e-4)
         grads = optimizer.compute_gradients(self.loss)
 
         for grad_i, grad in enumerate(grads):
             tf.summary.histogram('grad_{}'.format(grad[1].name), grad)
 
-        self._optimize = optimizer.apply_gradients(grads_and_vars=grads)
+        self._optimize = optimizer.apply_gradients(grads_and_vars=grads, global_step=global_step)
         return self._optimize
