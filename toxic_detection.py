@@ -34,8 +34,8 @@ class ToxicityCNN:
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
         """
+        self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.comment_length = None
-        self.comment_batch, self.toxicity_batch = None, None
         self.embedded = None
         self.embeddings = None
         self.embedding_size = embedding_size
@@ -75,13 +75,14 @@ class ToxicityCNN:
         _, value = reader.read(queue)
         record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
         cols = tf.decode_csv(value, record_defaults=record_defaults)
-        comment_text = tf.stack(cols[-60:])  # Skip id column
+        comment_id = cols[0]
+        comment_text = tf.stack(cols[-60:])
         toxicity = tf.stack(cols[2:8])
 
         min_after_dequeue = 10000
         capacity = min_after_dequeue + 4 * batch_size
-        self.comment_batch, self.toxicity_batch = tf.train.shuffle_batch(
-            [comment_text, toxicity], batch_size=batch_size,
+        self.comment_batch, self.toxicity_batch, self.id_batch = tf.train.shuffle_batch(
+            [comment_text, toxicity, comment_id], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
 
     def create_embedding(self, vocab_size, embedding_size,
@@ -128,7 +129,9 @@ class ToxicityCNN:
             reuse_variables: boolean, Set to True to reuse weights and biases.
 
         Returns:
-            output: Tensor, output tensor from the network.
+            output_logits: Tensor, output tensor from the network.
+            output: Tensor, output after sigmoid.
+            prediction: Tensor, output prediction.
         """
 
         def pool_size(ksize):
@@ -192,6 +195,10 @@ class ToxicityCNN:
         prediction = tf.argmax(output, axis=1)
 
         return output_logits, output, prediction
+
+    def train(self):
+        # TODO implement train
+        raise NotImplementedError
 
     @property_wrap('_prediction')
     def prediction(self):
