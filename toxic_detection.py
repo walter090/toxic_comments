@@ -22,7 +22,7 @@ def property_wrap(attr):
 class ToxicityCNN:
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
-                 num_output=None):
+                 num_labels=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -32,20 +32,19 @@ class ToxicityCNN:
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
         """
-        self.num_labels = None
+        self.num_labels = num_labels
         self.comment_length = None
         self.comment_batch, self.toxicity_batch = None, None
         self.embeddings = None
         self.embedding_size = embedding_size
         self.vocab_size = vocab_size
-        self.num_output = num_output
 
         self._prediction = None
         self._optimizer = None
         self._error = None
 
-        if csvs and batch_size and num_epochs and num_output:
-            self._file_read_op(csvs, batch_size, num_output, num_epochs)
+        if csvs and batch_size and num_epochs and num_labels:
+            self._file_read_op(csvs, batch_size, num_labels, num_epochs)
 
         if vocab_size and embedding_size:
             self._create_embedding(vocab_size, embedding_size)
@@ -63,7 +62,7 @@ class ToxicityCNN:
         Returns:
             None
         """
-        self.num_output = num_labels
+        self.num_labels = num_labels
 
         reader = tf.TextLineReader(skip_header_lines=1)
         queue = tf.train.string_input_producer(file_names,
@@ -102,13 +101,14 @@ class ToxicityCNN:
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
 
-    def network(self, x_input, num_output,
+    def network(self, x_input=None, num_output=None,
                 layer_config=None, fully_conn_config=None, pool='max',
                 name='network', padding='VALID', batchnorm=True,
                 reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
-        to the config lists.
+        to the config lists. The prediction property calls this function with all its
+        default arguments.
 
         Args:
             x_input: Tensor, input tensor to the network.
@@ -131,6 +131,10 @@ class ToxicityCNN:
             return self.comment_length - ksize + 1
 
         with tf.variable_scope(name, reuse=reuse_variables):
+            if not (x_input and num_output):
+                x_input = self.comment_batch
+                num_output = self.num_labels
+
             layer_config = [
                 # Convolution layer configuration
                 # ksize, stride, out_channels, pool_ksize, pool_stride
@@ -183,16 +187,16 @@ class ToxicityCNN:
         return output
 
     @property_wrap('_prediction')
-    def predict(self):
-        # TODO implement predict
-        raise NotImplementedError
+    def prediction(self):
+        self._prediction = self.network()
+        return self._prediction
 
     @property_wrap('_optimizer')
-    def optimize(self):
+    def optimization(self):
         # TODO implement optimize
         raise NotImplementedError
 
     @property_wrap('_error')
-    def geterror(self):
+    def error(self):
         # TODO implement geterror
         raise NotImplementedError
