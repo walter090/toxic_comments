@@ -220,7 +220,7 @@ def _find_replace(df, uncommon, unknown):
 
 def translate(file_dir, file_name, vocabulary,
               new_dir=None, chunk_size=40000, word_to_id=True,
-              unknown='<unk>'):
+              unknown='<unk>', max_length=60):
     """Translate text in csv file either from word to id or id to word.
 
     Args:
@@ -234,6 +234,7 @@ def translate(file_dir, file_name, vocabulary,
         chunk_size: int, size of each chunk.
         word_to_id: boolean, set to False to translate from id to string word.
         unknown: string, designator for unseen words.
+        max_length: int, max length of each comment.
 
     Returns:
         None.
@@ -253,6 +254,10 @@ def translate(file_dir, file_name, vocabulary,
 
     for index, chunk in enumerate(df_chunks):
         print('Translating chunk {}'.format(index), end='...')
+
+        for i in range(max_length):
+            chunk['v_{}'.format(i)] = -2
+            chunk['v_{}'.format(i)].astype(int, copy=False)
 
         with Pool(processes) as pool:
             step = chunk_size // processes
@@ -279,13 +284,13 @@ def _translate_comment(df, word_to_id, vocab,
     translation_table = vocab[0] if word_to_id else vocab[1]
     for row, entry in df.iterrows():
         comment_text = entry['comment_text'].split(' ')
-        translated_comment = []
-        for word in comment_text:
-            try:
-                translated_word = str(translation_table[word])
-            except KeyError:
-                translated_word = str(translation_table[unknown])
-            translated_comment.append(translated_word)
 
-        df.at[row, 'comment_text'] = ' '.join(translated_comment)
+        for index, word in enumerate(comment_text):
+            try:
+                translated_word = translation_table[word]
+            except KeyError:
+                translated_word = translation_table[unknown]
+
+            df.at[row, 'v_{}'.format(index)] = translated_word
+
     return df
