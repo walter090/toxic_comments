@@ -1,3 +1,5 @@
+import datetime
+import os
 from functools import wraps
 
 import tensorflow as tf
@@ -39,6 +41,7 @@ class ToxicityCNN:
         self.embedded = None
         self.embeddings = None
         self.embedding_size = embedding_size
+        self.global_step = None
         self.num_labels = num_labels
         self.vocab_size = vocab_size
 
@@ -196,10 +199,6 @@ class ToxicityCNN:
 
         return output_logits, output, prediction
 
-    def train(self):
-        # TODO implement train
-        raise NotImplementedError
-
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self.network()
@@ -218,7 +217,7 @@ class ToxicityCNN:
 
     @property_wrap('_optimize')
     def optimize(self):
-        global_step = tf.Variable(0, trainable=False, name='global_step')
+        self.global_step = tf.Variable(0, trainable=False, name='global_step')
 
         optimizer = tf.train.AdamOptimizer(1e-4)
         grads = optimizer.compute_gradients(self.loss)
@@ -226,5 +225,5 @@ class ToxicityCNN:
         for grad_i, grad in enumerate(grads):
             tf.summary.histogram('grad_{}'.format(grad[1].name), grad)
 
-        self._optimize = optimizer.apply_gradients(grads_and_vars=grads, global_step=global_step)
+        self._optimize = optimizer.apply_gradients(grads_and_vars=grads, global_step=self.global_step)
         return self._optimize
