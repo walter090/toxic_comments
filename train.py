@@ -8,8 +8,8 @@ from toxic_detection import ToxicityCNN
 
 def train(csvs, batch_size, num_epochs,
           vocab_size, embedding_size, num_labels,
-          verbose_freq=2000, save=True):
-
+          verbose_freq=2000, save=True, restore=False,
+          meta=None):
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
                         vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels)
 
@@ -26,15 +26,19 @@ def train(csvs, batch_size, num_epochs,
 
     writer = tf.summary.FileWriter(log_dir, sess.graph)
 
-    sess.run(tf.local_variables_initializer())
-    sess.run(tf.global_variables_initializer())
+    if not restore:
+        sess.run(tf.local_variables_initializer())
+        sess.run(tf.global_variables_initializer())
+    else:
+        restore_variables(meta, sess)
+
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
 
     try:
         while not coord.should_stop():
             sess.run(init_op)
-            _, step, loss, summaries = sess.run([model.optimize, tf.train.global_step(sess, model.global_step),
+            _, step, loss, summaries = sess.run([model.optimize, model.global_step,
                                                  model.loss, all_summaries])
             writer.add_summary(summaries, global_step=step)
             cur_time = datetime.datetime.now().isoformat('-')
@@ -53,3 +57,9 @@ def train(csvs, batch_size, num_epochs,
         saver.save(sess, save_path=model_dir, global_step=cur_step)
 
     sess.close()
+
+
+def restore_variables(meta, sess):
+    tf.reset_default_graph()
+    imported = tf.train.import_meta_graph(meta)
+    imported.restore(sess, tf.train.latest_checkpoint('./'))
