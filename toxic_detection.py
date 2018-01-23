@@ -71,10 +71,10 @@ class ToxicityCNN:
                                                shuffle=True)
 
         _, value = reader.read(queue)
-        record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0]]
+        record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
         cols = tf.decode_csv(value, record_defaults=record_defaults)
-        comment_text = cols[1]  # Skip id column
-        toxicity = tf.stack(cols[2:])
+        comment_text = tf.stack(cols[-60:])  # Skip id column
+        toxicity = tf.stack(cols[2:8])
 
         min_after_dequeue = 10000
         capacity = min_after_dequeue + 4 * batch_size
