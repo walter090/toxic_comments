@@ -1,6 +1,8 @@
-import structure
-import tensorflow as tf
 from functools import wraps
+
+import tensorflow as tf
+
+import structure
 
 
 def property_wrap(attr):
@@ -40,8 +42,8 @@ class ToxicityCNN:
         self.num_labels = num_labels
         self.vocab_size = vocab_size
 
-        self._error = None
-        self._optimizer = None
+        self._loss = None
+        self._optimize = None
         self._prediction = None
 
         if csvs and batch_size and num_epochs and num_labels:
@@ -184,21 +186,28 @@ class ToxicityCNN:
                                                      activation=layer[1], keep_prob=layer[2],
                                                      name='fc_{}'.format(layer_i))
 
-        output = structure.fully_conn(output_fully_conn, num_output=num_output,
-                                      name='fc_out', activation='sigmoid')
-        return output
+        output_logits = structure.fully_conn(output_fully_conn, num_output=num_output,
+                                             name='fc_out', activation=None)
+        output = tf.nn.sigmoid(output_logits)
+        prediction = tf.argmax(output, axis=1)
+
+        return output_logits, output, prediction
 
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self.network()
         return self._prediction
 
-    @property_wrap('_optimizer')
-    def optimization(self):
-        # TODO implement optimize
-        raise NotImplementedError
+    @property_wrap('_loss')
+    def loss(self):
+        logits, output, pred = self.prediction
+        losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
+        self._loss = tf.reduce_mean(losses)
+        return self._loss
 
-    @property_wrap('_error')
-    def error(self):
-        # TODO implement geterror
-        raise NotImplementedError
+    @property_wrap('_optimize')
+    def optimize(self):
+        optimizer = tf.train.AdamOptimizer(1e-4)
+        grads = optimizer.compute_gradients(self.loss)
+        self._optimize = optimizer.apply_gradients(grads_and_vars=grads)
+        return self._optimize
