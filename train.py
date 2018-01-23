@@ -37,8 +37,9 @@ def train(csvs, batch_size, num_epochs,
             _, step, loss, summaries = sess.run([model.optimize, tf.train.global_step(sess, model.global_step),
                                                  model.loss, all_summaries])
             writer.add_summary(summaries, global_step=step)
+            cur_time = datetime.datetime.now().isoformat('-')
             if step % verbose_freq == 0:
-                print('At step {}, loss {}'.format(step, loss))
+                print('{} - At step {}, loss {}'.format(cur_time, step, loss))
 
     except tf.errors.OutOfRangeError:
         print('Done training -- epoch limit reached')
@@ -47,8 +48,8 @@ def train(csvs, batch_size, num_epochs,
 
     coord.join(threads)
 
-    # TODO save trained model
     if save:
-        raise NotImplementedError
+        cur_step = tf.train.global_step(sess, model.global_step)
+        saver.save(sess, save_path=model_dir, global_step=cur_step)
 
     sess.close()
