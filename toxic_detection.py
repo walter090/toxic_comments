@@ -32,16 +32,17 @@ class ToxicityCNN:
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
         """
-        self.num_labels = num_labels
         self.comment_length = None
         self.comment_batch, self.toxicity_batch = None, None
+        self.embedded = None
         self.embeddings = None
         self.embedding_size = embedding_size
+        self.num_labels = num_labels
         self.vocab_size = vocab_size
 
-        self._prediction = None
-        self._optimizer = None
         self._error = None
+        self._optimizer = None
+        self._prediction = None
 
         if csvs and batch_size and num_epochs and num_labels:
             self._file_read_op(csvs, batch_size, num_labels, num_epochs)
@@ -100,6 +101,7 @@ class ToxicityCNN:
             self.embeddings = tf.get_variable(name='embedding_w',
                                               shape=[vocab_size, embedding_size],
                                               initializer=tf.random_uniform_initializer(-1, 1))
+            self.embedded = tf.nn.embedding_lookup(self.embeddings, self.comment_batch)
 
     def network(self, x_input=None, num_output=None,
                 layer_config=None, fully_conn_config=None, pool='max',
@@ -132,7 +134,7 @@ class ToxicityCNN:
 
         with tf.variable_scope(name, reuse=reuse_variables):
             if not (x_input and num_output):
-                x_input = self.comment_batch
+                x_input = self.embedded
                 num_output = self.num_labels
 
             layer_config = [
