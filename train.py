@@ -23,9 +23,14 @@ def train(csvs, batch_size, num_epochs,
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
-    model_optimization = model.optimize
+    model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
+
+    tf.summary.scalar('loss', model_loss)
+
+    for grad_i, grad in enumerate(model_grads):
+        tf.summary.histogram('grad_{}'.format(grad_i), grad[0])
 
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
