@@ -9,7 +9,8 @@ from toxic_detection import ToxicityCNN
 def train(csvs, batch_size, num_epochs,
           vocab_size, embedding_size, num_labels,
           verbose_freq=2000, save_freq=10000, restore=False,
-          meta=None, comment_length=60):
+          meta=None, comment_length=60, log_dir=None,
+          model_dir=None):
 
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
@@ -19,8 +20,8 @@ def train(csvs, batch_size, num_epochs,
     all_summaries = tf.summary.merge_all()
     timestamp = datetime.datetime.now().isoformat('_')
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
-    log_dir = os.path.join(save_dir, 'tensorboard')
-    model_dir = os.path.join(save_dir, 'saved_models')
+    log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
+    model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
     model_optimization = model.optimize
     model_step = model.global_step
@@ -68,3 +69,10 @@ def restore_variables(meta, sess):
     tf.reset_default_graph()
     imported = tf.train.import_meta_graph(meta)
     imported.restore(sess, tf.train.latest_checkpoint('./'))
+
+
+if __name__ == '__main__':
+    train(csvs=[os.path.abspath(os.path.join(os.path.curdir, 'dataset', 'processed',
+                                             'translated', 'train.csv'))],
+          batch_size=4000, num_epochs=2000, vocab_size=18895,
+          embedding_size=100, num_labels=6, comment_length=60)
