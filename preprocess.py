@@ -162,9 +162,11 @@ def build_vocab(word_count, threshold=5, padword='<pad>',
     vocab = {unknown: 0, padword: 1}
     uncommon = []
 
-    for index, (word, occurrences) in enumerate(word_count.items()):
+    index = 2
+    for word, occurrences in word_count.items():
         if occurrences > threshold and word != padword:
             vocab[word] = index
+            index += 1
         elif len(uncommon) < uncommon_limit:
             uncommon.append(word)
 
