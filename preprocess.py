@@ -123,13 +123,13 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
         for _, entry in chunk.iterrows():
             comment_text = entry['comment_text'].split(' ')
             for word in comment_text:
-                if word_count != padword:
+                if word != padword:
                     word_count[word] += 1
 
     return dict(word_count)
 
 
-def build_vocab(word_count, threshold=3, padword='<pad>',
+def build_vocab(word_count, threshold=5, padword='<pad>',
                 unknown='<unk>', modify=False, file_dir=None,
                 file_name=None, new_dir=None, chunk_size=20000,
                 uncommon_limit=500, pickle_dir=None):
@@ -159,7 +159,7 @@ def build_vocab(word_count, threshold=3, padword='<pad>',
         reverse_vocab: dict, reversed vocabulary mapping.
         or None if mode 2 is selected.
     """
-    vocab = {unknown: -2, padword: -1}
+    vocab = {unknown: 0, padword: 1}
     uncommon = []
 
     for index, (word, occurrences) in enumerate(word_count.items()):
@@ -256,7 +256,7 @@ def translate(file_dir, file_name, vocabulary,
         print('Translating chunk {}'.format(index), end='...')
 
         for i in range(max_length):
-            chunk['v_{}'.format(i)] = -2
+            chunk['v_{}'.format(i)] = 0  # 0 for unknown
             chunk['v_{}'.format(i)].astype(int, copy=False)
 
         with Pool(processes) as pool:
