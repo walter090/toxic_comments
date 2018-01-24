@@ -212,8 +212,6 @@ class ToxicityCNN:
         losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
         loss = tf.reduce_mean(losses)
 
-        tf.summary.scalar('loss', loss)
-
         self._loss = loss
         return self._loss
 
@@ -224,8 +222,6 @@ class ToxicityCNN:
         optimizer = tf.train.AdamOptimizer(1e-4)
         grads = optimizer.compute_gradients(self.loss)
 
-        for grad_i, grad in enumerate(grads):
-            tf.summary.histogram('grad_{}'.format(grad_i), grad[0])
-
-        self._optimize = optimizer.apply_gradients(grads_and_vars=grads, global_step=self.global_step)
+        self._optimize = grads, optimizer.apply_gradients(grads_and_vars=grads,
+                                                          global_step=self.global_step)
         return self._optimize
