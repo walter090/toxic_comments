@@ -24,7 +24,7 @@ def property_wrap(attr):
 class ToxicityCNN:
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
-                 num_labels=None):
+                 num_labels=None, comment_length=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -35,7 +35,7 @@ class ToxicityCNN:
             embedding_size: int, size of each word vector.
         """
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
-        self.comment_length = None
+        self.comment_length = comment_length
         self.embedded = None
         self.embeddings = None
         self.embedding_size = embedding_size
@@ -48,13 +48,13 @@ class ToxicityCNN:
         self._prediction = None
 
         if csvs and batch_size and num_epochs and num_labels:
-            self.file_read_op(csvs, batch_size, num_labels, num_epochs)
+            self.file_read_op(csvs, batch_size, num_labels, num_epochs, comment_length)
 
         if vocab_size and embedding_size:
             self.create_embedding(vocab_size, embedding_size)
 
     def file_read_op(self, file_names, batch_size,
-                     num_labels, num_epochs):
+                     num_labels, num_epochs, comment_length):
         """Read csv files in batch
 
         Args:
@@ -62,11 +62,13 @@ class ToxicityCNN:
             batch_size: int, batch size.
             num_labels: int, number of labels.
             num_epochs: int, number of epochs.
+            comment_length: int, length of each comment
 
         Returns:
             None
         """
         self.num_labels = num_labels
+        self.comment_length = comment_length
 
         reader = tf.TextLineReader(skip_header_lines=1)
         queue = tf.train.string_input_producer(file_names,
@@ -85,6 +87,7 @@ class ToxicityCNN:
         self.comment_batch, self.toxicity_batch, self.id_batch = tf.train.shuffle_batch(
             [comment_text, toxicity, comment_id], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
+        self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
 
     def create_embedding(self, vocab_size, embedding_size,
                          name='embedding'):
@@ -141,6 +144,7 @@ class ToxicityCNN:
         with tf.variable_scope(name, reuse=reuse_variables):
             if not (x_input and num_output):
                 x_input = self.embedded
+                x_input = tf.expand_dims(x_input, -1)
                 num_output = self.num_labels
 
             layer_config = [
@@ -166,14 +170,14 @@ class ToxicityCNN:
             ] if not fully_conn_config else fully_conn_config
 
             outputs = []
-            pool_output = x_input
 
             for config_i, config in enumerate(layer_config):
+                pool_output = x_input
                 for layer_i, layer in enumerate(config):
                     pool_output = structure.conv_pool(
-                        pool_output, ksize=[self.embedding_size, layer[0]],
+                        pool_output, ksize=[layer[0], self.embedding_size],
                         stride=[1, layer[1]], out_channels=layer[2],
-                        pool_ksize=[self.embedding_size, layer[3]],
+                        pool_ksize=[layer[3], 1],
                         pool_stride=[1, layer[4]], alpha=0.1,
                         padding=padding, batchnorm=batchnorm,
                         method=pool, name='conv_{}_{}'.format(config_i, layer_i))
@@ -221,7 +225,7 @@ class ToxicityCNN:
         grads = optimizer.compute_gradients(self.loss)
 
         for grad_i, grad in enumerate(grads):
-            tf.summary.histogram('grad_{}'.format(grad[1].name), grad)
+            tf.summary.histogram('grad_{}'.format(grad_i), grad[0])
 
         self._optimize = optimizer.apply_gradients(grads_and_vars=grads, global_step=self.global_step)
         return self._optimize
