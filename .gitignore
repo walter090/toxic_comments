@@ -3,3 +3,6 @@ __pycache__/
 test/
 .ipynb_checkpoints
 dataset/
+models_and_visual/
+.floydexpt
+.floydignore
