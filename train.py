@@ -8,7 +8,7 @@ from toxic_detection import ToxicityCNN
 
 def train(csvs, batch_size, num_epochs,
           vocab_size, embedding_size, num_labels,
-          verbose_freq=2000, save=True, restore=False,
+          verbose_freq=2000, save_freq=10000, restore=False,
           meta=None, comment_length=60):
 
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
@@ -50,6 +50,9 @@ def train(csvs, batch_size, num_epochs,
                 cur_time = datetime.datetime.now().isoformat('-')
                 if step % verbose_freq == 0:
                     print('{} - At step {}, loss {}'.format(cur_time, step, loss))
+                if step % save_freq == 0:
+                    saver = tf.train.Saver(var_list=tf.global_variables())
+                    saver.save(sess, save_path=model_dir, global_step=step)
 
         except tf.errors.OutOfRangeError:
             print('Done training -- epoch limit reached')
@@ -57,11 +60,8 @@ def train(csvs, batch_size, num_epochs,
             coord.request_stop()
 
         coord.join(threads)
-
-        if save:
-            saver = tf.train.Saver(var_list=tf.global_variables())
-            cur_step = tf.train.global_step(sess, model.global_step)
-            saver.save(sess, save_path=model_dir, global_step=cur_step)
+        saver = tf.train.Saver(var_list=tf.global_variables())
+        saver.save(sess, save_path=model_dir)
 
 
 def restore_variables(meta, sess):
