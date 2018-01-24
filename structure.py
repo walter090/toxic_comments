@@ -32,7 +32,6 @@ def conv_pool(x, ksize=None, stride=None,
         bias = tf.get_variable(name='conv_b',
                                shape=[out_channels],
                                initializer=tf.zeros_initializer())
-        stride = [1, *stride, 1]
 
         convoluted = tf.nn.convolution(x, filter=weights,
                                        strides=stride, padding=padding)
@@ -44,8 +43,8 @@ def conv_pool(x, ksize=None, stride=None,
         output = lrelu(convoluted, alpha)
 
         if pool_ksize and pool_stride:
-            pool_ksize = (1,) + pool_ksize + (1,)
-            pool_stride = (1,) + pool_stride + (1,)
+            pool_ksize = [1, *pool_ksize, 1]
+            pool_stride = [1, *pool_stride, 1]
 
             if method == 'avg':
                 output = tf.nn.avg_pool(output, ksize=pool_ksize,
@@ -148,7 +147,6 @@ def batch_normalize(x, epsilon=1e-5):
     Returns:
         Output tensor.
     """
-    # Before activation
     with tf.variable_scope('batch_norm'):
         mean, variance = tf.nn.moments(x, axes=[0, 1, 2])
 
