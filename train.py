@@ -17,7 +17,6 @@ def train(csvs, batch_size, num_epochs,
                         embedding_size=embedding_size, num_labels=num_labels,
                         comment_length=comment_length)
 
-    all_summaries = tf.summary.merge_all()
     timestamp = datetime.datetime.now().isoformat('_')
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
@@ -31,6 +30,8 @@ def train(csvs, batch_size, num_epochs,
 
     for grad_i, grad in enumerate(model_grads):
         tf.summary.histogram('grad_{}'.format(grad_i), grad[0])
+    
+    all_summaries = tf.summary.merge_all()
 
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
