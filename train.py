@@ -80,5 +80,5 @@ def restore_variables(meta, sess):
 if __name__ == '__main__':
     train(csvs=[os.path.abspath(os.path.join(os.path.curdir, 'dataset', 'processed',
                                              'translated', 'train.csv'))],
-          batch_size=4000, num_epochs=2000, vocab_size=18895,
+          batch_size=2000, num_epochs=100, vocab_size=18895,
           embedding_size=100, num_labels=6, comment_length=60)
