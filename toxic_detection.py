@@ -112,7 +112,7 @@ class ToxicityCNN:
 
     def network(self, x_input=None, num_output=None,
                 layer_config=None, fully_conn_config=None, pool='max',
-                name='network', padding='VALID', batchnorm=True,
+                name='network', padding='VALID', batchnorm=False,
                 reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
