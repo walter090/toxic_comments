@@ -29,7 +29,7 @@ def train(csvs, batch_size, num_epochs,
     tf.summary.scalar('loss', model_loss)
 
     for grad_i, grad in enumerate(model_grads):
-        tf.summary.histogram('grad_{}'.format(grad.name), grad[0])
+        tf.summary.histogram('grad_{}'.format(grad[0].name), grad[0])
     
     all_summaries = tf.summary.merge_all()
 
