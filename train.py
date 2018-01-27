@@ -13,7 +13,6 @@ def train(csvs, batch_size, num_epochs,
           verbose_freq=200, save_freq=2000, restore=False,
           meta=None, comment_length=60, log_dir=None,
           model_dir=None, metadata=None):
-
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
                         embedding_size=embedding_size, num_labels=num_labels,
@@ -24,7 +23,7 @@ def train(csvs, batch_size, num_epochs,
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
-    model_embeddings = model.embeddings
+    model_embeddings = model.embeddings  # 18895
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
@@ -89,7 +88,27 @@ def restore_variables(meta, sess):
 
 
 if __name__ == '__main__':
-    train(csvs=['/home/paperspace/Documents/dataset/train.csv'],
-          batch_size=2000, num_epochs=200, vocab_size=18895,
-          embedding_size=100, num_labels=6, comment_length=60,
-          save_freq=1000)
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-d', '--data', nargs='+',
+                        help='Set training data csv files', required=True, dest='csvs')
+    parser.add_argument('-b', '--batch', dest='batch_size',
+                        help='Specify batch size', type=int, default=2000)
+    parser.add_argument('-e', '--epochs', dest='num_epochs',
+                        help='Number of epochs', type=int, default=100)
+    parser.add_argument('-v', '--vocab', dest='vocab_size',
+                        help='Vocabulary size', type=int, required=True)
+    parser.add_argument('-e', '--embedding', dest='embedding_size',
+                        help='Embedding size', type=int, default=100)
+    parser.add_argument('-l', '--labels', dest='num_labels',
+                        help='Number of labels', type=int, required=True)
+    parser.add_argument('-t', '--tlength', dest='comment_length',
+                        help='Comment length', type=int, required=True)
+    parser.add_argument('-s', '--sfreq', dest='save_freq',
+                        help='Save frequency', type=int, default=1000)
+
+    args = parser.parse_args()
+
+    train(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
+          vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
+          comment_length=args.comment_length, save_freq=args.save_freq)
