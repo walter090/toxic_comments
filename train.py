@@ -2,6 +2,7 @@ import datetime
 import os
 
 import tensorflow as tf
+from tensorflow.contrib.tensorboard.plugins import projector
 
 from toxic_detection import ToxicityCNN
 
@@ -38,6 +39,11 @@ def train(csvs, batch_size, num_epochs,
 
     with tf.Session() as sess:
         writer = tf.summary.FileWriter(log_dir, sess.graph)
+
+        projector_config = projector.ProjectorConfig()
+        embedding_projector = projector_config.embeddings.add()
+        embedding_projector.tensor_name = 'embeddings'
+        projector.visualize_embeddings(writer, projector_config)
 
         sess.run(init_op)
 
