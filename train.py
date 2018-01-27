@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import os
 
@@ -23,10 +24,10 @@ def train(csvs, batch_size, num_epochs,
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
+    model_embeddings = model.embeddings
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
-    model_embeddings = model.embeddings
 
     tf.summary.scalar('loss', model_loss)
 
@@ -89,5 +90,6 @@ def restore_variables(meta, sess):
 
 if __name__ == '__main__':
     train(csvs=['/home/paperspace/Documents/dataset/train.csv'],
-          batch_size=2000, num_epochs=100, vocab_size=18895,
-          embedding_size=100, num_labels=6, comment_length=60)
+          batch_size=2000, num_epochs=200, vocab_size=18895,
+          embedding_size=100, num_labels=6, comment_length=60,
+          save_freq=1000)
