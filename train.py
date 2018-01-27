@@ -26,6 +26,7 @@ def train(csvs, batch_size, num_epochs,
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
+    model_embeddings = model.embeddings
 
     tf.summary.scalar('loss', model_loss)
 
@@ -42,7 +43,7 @@ def train(csvs, batch_size, num_epochs,
 
         projector_config = projector.ProjectorConfig()
         embedding_projector = projector_config.embeddings.add()
-        embedding_projector.tensor_name = 'embeddings'
+        embedding_projector.tensor_name = model_embeddings.name
         if metadata:
             embedding_projector.metadata_path = metadata
 
