@@ -132,7 +132,7 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
 def build_vocab(word_count, threshold=5, padword='<pad>',
                 unknown='<unk>', modify=False, file_dir=None,
                 file_name=None, new_dir=None, chunk_size=20000,
-                uncommon_limit=500, pickle_dir=None):
+                uncommon_limit=500, pickle_dir=None, tsv_dir=None):
     """Build a vocabulary based on words that appear in the training set.
     Words with number of occurrences below the threshold is sorted as unknown,
     this teaches the model the handel unseen words in the testing set.
@@ -153,6 +153,7 @@ def build_vocab(word_count, threshold=5, padword='<pad>',
         uncommon_limit: int, size limit of the uncommon word list.
         pickle_dir: string, name of directory to store pickeled lookup dictionaries.
             the dictionary is not saved if a value is not provided. Defaults None.
+        tsv_dir: string, name of directory to store tsv look up.
 
     Returns:
         vocab: dict, vocabulary mapping.
@@ -164,7 +165,7 @@ def build_vocab(word_count, threshold=5, padword='<pad>',
 
     index = 2
     for word, occurrences in word_count.items():
-        if occurrences > threshold and word != padword:
+        if occurrences > threshold and word != padword and word != unknown:
             vocab[word] = index
             index += 1
         elif len(uncommon) < uncommon_limit:
@@ -204,8 +205,20 @@ def build_vocab(word_count, threshold=5, padword='<pad>',
         print('Complete')
 
     if pickle_dir:
+        if not os.path.exists(pickle_dir):
+            os.makedirs(pickle_dir)
+
         with open(os.path.join(pickle_dir, 'vocabulary.pickle'), 'wb') as saver:
             pickle.dump((vocab, reverse_vocab), saver, protocol=pickle.HIGHEST_PROTOCOL)
+
+    if tsv_dir:
+        if not os.path.exists(tsv_dir):
+            os.makedirs(tsv_dir)
+
+        with open(os.path.join(tsv_dir, 'metadata.tsv'), 'w') as meta_saver:
+            meta_saver.write('ID\tWord\n')
+            for id_, word in reverse_vocab.items():
+                meta_saver.write('{}\t{}\n'.format(id_, word))
 
     return vocab, reverse_vocab
 
