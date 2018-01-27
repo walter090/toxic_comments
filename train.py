@@ -11,7 +11,7 @@ def train(csvs, batch_size, num_epochs,
           vocab_size, embedding_size, num_labels,
           verbose_freq=200, save_freq=2000, restore=False,
           meta=None, comment_length=60, log_dir=None,
-          model_dir=None):
+          model_dir=None, metadata=None):
 
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
@@ -43,6 +43,9 @@ def train(csvs, batch_size, num_epochs,
         projector_config = projector.ProjectorConfig()
         embedding_projector = projector_config.embeddings.add()
         embedding_projector.tensor_name = 'embeddings'
+        if metadata:
+            embedding_projector.metadata_path = metadata
+
         projector.visualize_embeddings(writer, projector_config)
 
         sess.run(init_op)
@@ -84,7 +87,6 @@ def restore_variables(meta, sess):
 
 
 if __name__ == '__main__':
-    train(csvs=[os.path.abspath(os.path.join(os.path.curdir, 'dataset', 'processed',
-                                             'translated', 'train.csv'))],
+    train(csvs=['/home/paperspace/Documents/dataset/train.csv'],
           batch_size=2000, num_epochs=100, vocab_size=18895,
           embedding_size=100, num_labels=6, comment_length=60)
