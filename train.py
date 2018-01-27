@@ -9,7 +9,7 @@ from toxic_detection import ToxicityCNN
 
 def train(csvs, batch_size, num_epochs,
           vocab_size, embedding_size, num_labels,
-          verbose_freq=2000, save_freq=10000, restore=False,
+          verbose_freq=200, save_freq=2000, restore=False,
           meta=None, comment_length=60, log_dir=None,
           model_dir=None):
 
@@ -46,6 +46,7 @@ def train(csvs, batch_size, num_epochs,
         projector.visualize_embeddings(writer, projector_config)
 
         sess.run(init_op)
+        saver = tf.train.Saver(var_list=tf.global_variables())
 
         if restore:
             restore_variables(meta, sess)
@@ -64,7 +65,6 @@ def train(csvs, batch_size, num_epochs,
                 if step % verbose_freq == 0:
                     print('{} - At step {}, loss {}'.format(cur_time, step, loss))
                 if step % save_freq == 0:
-                    saver = tf.train.Saver(var_list=tf.global_variables())
                     saver.save(sess, save_path=model_dir, global_step=step)
 
         except tf.errors.OutOfRangeError:
