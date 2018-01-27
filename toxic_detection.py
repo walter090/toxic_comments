@@ -37,12 +37,12 @@ class ToxicityCNN:
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.comment_length = comment_length
         self.embedded = None
-        self.embeddings = None
         self.embedding_size = embedding_size
         self.global_step = None
         self.num_labels = num_labels
         self.vocab_size = vocab_size
 
+        self._embeddings = None
         self._loss = None
         self._optimize = None
         self._prediction = None
@@ -89,26 +89,18 @@ class ToxicityCNN:
             capacity=capacity, min_after_dequeue=min_after_dequeue)
         self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
 
-    def create_embedding(self, vocab_size, embedding_size,
-                         name='embedding'):
+    def create_embedding(self, vocab_size, embedding_size):
         """ Create embedding
 
         Args:
             vocab_size: Int, vocabulary size.
             embedding_size: Int, size of word vector.
-            name: String, operation name.
 
         Returns:
             None
         """
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
-
-        with tf.variable_scope(name):
-            self.embeddings = tf.get_variable(name='embedding_w',
-                                              shape=[vocab_size, embedding_size],
-                                              initializer=tf.random_uniform_initializer(-1, 1))
-            self.embedded = tf.nn.embedding_lookup(self.embeddings, self.comment_batch)
 
     def network(self, x_input=None, num_output=None,
                 layer_config=None, fully_conn_config=None, pool='max',
@@ -225,3 +217,12 @@ class ToxicityCNN:
         self._optimize = grads, optimizer.apply_gradients(grads_and_vars=grads,
                                                           global_step=self.global_step)
         return self._optimize
+
+    @property_wrap('_embeddings')
+    def embeddings(self):
+        with tf.variable_scope('embedding'):
+            self._embeddings = tf.get_variable(name='embedding_w',
+                                               shape=[self.vocab_size, self.embedding_size],
+                                               initializer=tf.random_uniform_initializer(-1, 1))
+            self.embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
+            return self._embeddings
