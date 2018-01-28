@@ -246,6 +246,9 @@ def translate(file_dir, file_name, vocabulary,
     """Translate text in csv file either from word to id or id to word.
 
     Args:
+        ngram_name: string, name for ngram file.
+        ngram: boolean, set True to save a ngram dataset as csv file.
+        window: int, window size for skip gram.
         new_name: string, name for new file.
         file_dir: string, directory where the csv file is found.
         file_name: string, name of the csv file.
