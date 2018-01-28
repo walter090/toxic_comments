@@ -10,12 +10,13 @@ import pandas as pd
 
 
 def tokenize_comments(file_dir, file_name, chunk_size=20000,
-                      new_dir='tokenized', lower_case=True):
+                      new_dir=None, new_name='tokenized.csv', lower_case=True):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
 
     Args:
+        new_name: string, name for new file.
         file_dir: string, directory of the file.
         file_name: string, file name of the original csv file.
         chunk_size: int, size of each chunk.
@@ -23,10 +24,10 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
         lower_case: boolean, set True to convert all words to lower case.
 
     Returns:
-        None
+        New file location
     """
     df_chunk = pd.read_csv(os.path.join(file_dir, file_name), chunksize=chunk_size)
-    new_dir = os.path.join(file_dir, new_dir)
+    new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
 
     punctuations = list(string.punctuation)
     punctuations += ['``', "''"]
@@ -49,12 +50,13 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
             mode = 'a'
             header = False
 
-        chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+        chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
     print('Tokenization complete.')
+    return os.path.join(file_dir, new_name)
 
 
 def add_padding(file_dir, file_name, new_file=False,
-                new_dir='padded', max_length=60):
+                new_dir='padded', max_length=60, new_name='padded.csv'):
     """Add padding or cut off comments to make sure all the comments have the same length.
 
     Args:
@@ -64,9 +66,10 @@ def add_padding(file_dir, file_name, new_file=False,
         max_length: Int, the length of comment should pad to.
         new_file: Boolean, set True to save as a new file in the specified directory,
             the operation will be performed in place otherwise.
+        new_name: string, name for new saved file.
 
     Returns:
-        None
+        New file location
     """
 
     def pad(comment, pad_to, padword='<pad>'):
@@ -96,11 +99,12 @@ def add_padding(file_dir, file_name, new_file=False,
     # Save as new file or overwrite
     if new_file:
         os.mkdir(os.path.join(file_dir, new_dir))
-        save_to = os.path.join(file_dir, new_dir, file_name)
+        save_to = os.path.join(file_dir, new_dir, new_name)
     else:
-        save_to = os.path.join(file_dir, file_name)
+        save_to = os.path.join(file_dir, new_name)
 
     df.to_csv(save_to, index=False)
+    return save_to
 
 
 def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
@@ -131,13 +135,15 @@ def count_occurrences(file_name, chunk_size=20000, padword='<pad>'):
 
 def build_vocab(word_count, threshold=5, padword='<pad>',
                 unknown='<unk>', modify=False, file_dir=None,
-                file_name=None, new_dir=None, chunk_size=20000,
-                uncommon_limit=500, pickle_dir=None, tsv_dir=None):
+                file_name=None, new_dir=None, new_name='replaced.csv',
+                chunk_size=20000, uncommon_limit=500, pickle_dir=None,
+                tsv_dir=None):
     """Build a vocabulary based on words that appear in the training set.
     Words with number of occurrences below the threshold is sorted as unknown,
     this teaches the model the handel unseen words in the testing set.
 
     Args:
+        new_name: string, name for new saved file.
         word_count: dict, dictionary that maps a word to its number of occurrences.
         threshold: int, words with number of occurrences below this threshold is
             considered uncommon and not added to the vocabulary.
@@ -200,7 +206,7 @@ def build_vocab(word_count, threshold=5, padword='<pad>',
             else:
                 mode = 'a'
                 header = False
-            chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+            chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
 
         print('Complete')
 
@@ -234,11 +240,13 @@ def _find_replace(df, uncommon, unknown):
 
 
 def translate(file_dir, file_name, vocabulary,
-              new_dir=None, chunk_size=40000, word_to_id=True,
-              unknown='<unk>', max_length=60):
+              new_dir=None, new_name='translated.csv', chunk_size=40000,
+              word_to_id=True, unknown='<unk>', max_length=60,
+              ngram=False, ngram_name='ngram.csv', window=3):
     """Translate text in csv file either from word to id or id to word.
 
     Args:
+        new_name: string, name for new file.
         file_dir: string, directory where the csv file is found.
         file_name: string, name of the csv file.
         vocabulary: string or tuple, vocabulary look up table. If this model is
@@ -258,7 +266,7 @@ def translate(file_dir, file_name, vocabulary,
     new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
     processes = cpu_count()
 
-    if word_to_id.__class__.__name__ == 'str':
+    if vocabulary.__class__.__name__ == 'str':
         with open(vocabulary, 'rb') as loader:
             vocab = pickle.load(loader)
     else:
@@ -270,26 +278,59 @@ def translate(file_dir, file_name, vocabulary,
     for index, chunk in enumerate(df_chunks):
         print('Translating chunk {}'.format(index), end='...')
 
-        for i in range(max_length):
-            chunk['v_{}'.format(i)] = 0  # 0 for unknown
-            chunk['v_{}'.format(i)].astype(int, copy=False)
-
-        with Pool(processes) as pool:
-            step = chunk_size // processes
-            chunk_splits = [chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
-            results = pool.starmap(_translate_comment, zip(chunk_splits, repeat(word_to_id),
-                                                           repeat(vocab), repeat(unknown)))
-            chunk = pd.concat(results)
-
         if index == 0:
             mode = 'w'
             header = True
         else:
             mode = 'a'
             header = False
-        chunk.to_csv(os.path.join(new_dir, file_name), index=False, mode=mode, header=header)
+
+        translate_chunk = chunk
+        for i in range(max_length):
+            translate_chunk['v_{}'.format(i)] = 0  # 0 for unknown
+            translate_chunk['v_{}'.format(i)].astype(int, copy=False)
+
+        step = chunk_size // processes
+
+        with Pool(processes) as pool:
+            chunk_splits = [translate_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+            results = pool.starmap(_translate_comment, zip(chunk_splits, repeat(word_to_id),
+                                                           repeat(vocab), repeat(unknown)))
+            translate_chunk = pd.concat(results)
+        translate_chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
+
+        if ngram and word_to_id:
+            ngram_chunk = chunk
+            with Pool(processes) as pool:
+                splits = [ngram_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+                results = pool.starmap(_create_ngram, zip(splits, repeat(vocab),
+                                                          repeat(unknown), repeat(window)))
+                new_ngram = pd.concat(results)
+            new_ngram.to_csv(os.path.join(new_dir, ngram_name), index=False, mode=mode, header=header)
 
     print('Complete')
+
+
+def _create_ngram(df, vocab, unknown, window):
+    """Helper function for creating ngram
+    """
+    ngram_df = pd.DataFrame(columns=['target', 'context'])
+    translation_table = vocab[0]
+    either_side = (window - 1) / 2
+
+    for _, entry in df.iterrows():
+        comment_text = entry['comment_text'].split(' ')
+
+        for index in range(either_side, len(comment_text) - either_side):
+            try:
+                translated = translation_table[comment_text(index)]
+            except KeyError:
+                translated = translation_table[unknown]
+
+            for pos in range(either_side):
+                ngram_df.loc[-1] = translated[index - pos]
+                ngram_df.loc[-1] = translated[index + pos]
+    return ngram_df
 
 
 def _translate_comment(df, word_to_id, vocab,
