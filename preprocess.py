@@ -288,21 +288,22 @@ def translate(file_dir, file_name, vocabulary,
             mode = 'a'
             header = False
 
-        translate_chunk = chunk
-        for i in range(max_length):
-            translate_chunk['v_{}'.format(i)] = 0  # 0 for unknown
-            translate_chunk['v_{}'.format(i)].astype(int, copy=False)
-
         step = chunk_size // processes
 
-        with Pool(processes) as pool:
-            chunk_splits = [translate_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
-            results = pool.starmap(_translate_comment, zip(chunk_splits, repeat(word_to_id),
-                                                           repeat(vocab), repeat(unknown)))
-            translate_chunk = pd.concat(results)
-        translate_chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
+        if not ngram:
+            translate_chunk = chunk
+            for i in range(max_length):
+                translate_chunk['v_{}'.format(i)] = 0  # 0 for unknown
+                translate_chunk['v_{}'.format(i)].astype(int, copy=False)
 
-        if ngram and word_to_id:
+            with Pool(processes) as pool:
+                chunk_splits = [translate_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+                results = pool.starmap(_translate_comment, zip(chunk_splits, repeat(word_to_id),
+                                                               repeat(vocab), repeat(unknown)))
+                translate_chunk = pd.concat(results)
+            translate_chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
+
+        else:
             ngram_chunk = chunk
             with Pool(processes) as pool:
                 splits = [ngram_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
@@ -317,22 +318,26 @@ def translate(file_dir, file_name, vocabulary,
 def _create_ngram(df, vocab, unknown, window):
     """Helper function for creating ngram
     """
+    def lookup(word):
+        try:
+            translated_word = translation_table[word]
+        except KeyError:
+            translated_word = translation_table[unknown]
+        return translated_word
+
     ngram_df = pd.DataFrame(columns=['target', 'context'])
     translation_table = vocab[0]
-    either_side = (window - 1) / 2
+    either_side = (window - 1) // 2
 
     for _, entry in df.iterrows():
         comment_text = entry['comment_text'].split(' ')
 
         for index in range(either_side, len(comment_text) - either_side):
-            try:
-                translated = translation_table[comment_text(index)]
-            except KeyError:
-                translated = translation_table[unknown]
+            translated = lookup(comment_text[index])
 
-            for pos in range(either_side):
-                ngram_df.loc[-1] = translated[index - pos]
-                ngram_df.loc[-1] = translated[index + pos]
+            for pos in range(1, either_side + 1):
+                ngram_df.loc[len(ngram_df)] = [translated, lookup(comment_text[index - pos])]
+                ngram_df.loc[len(ngram_df)] = [translated, lookup(comment_text[index + pos])]
     return ngram_df
 
 
