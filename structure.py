@@ -5,7 +5,15 @@ import tensorflow as tf
 
 
 def property_wrap(attr):
-    """Checks if the function has already been called"""
+    """Checks if the function has already been called
+
+    Args:
+        attr: string, attribute name the decorated function is supposed
+            to return.
+
+    Returns:
+        function
+    """
 
     def de_facto_wrap(func):
         @property
