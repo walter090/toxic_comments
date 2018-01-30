@@ -242,12 +242,12 @@ def _find_replace(df, uncommon, unknown):
 def translate(file_dir, file_name, vocabulary,
               new_dir=None, new_name='translated.csv', chunk_size=40000,
               word_to_id=True, unknown='<unk>', max_length=60,
-              ngram=False, ngram_name='ngram.csv', window=3):
+              translate_mode='document', ngram_name='ngram.csv', window=3):
     """Translate text in csv file either from word to id or id to word.
 
     Args:
+        translate_mode: string, mode of translation.
         ngram_name: string, name for ngram file.
-        ngram: boolean, set True to save a ngram dataset as csv file.
         window: int, window size for skip gram.
         new_name: string, name for new file.
         file_dir: string, directory where the csv file is found.
@@ -290,7 +290,7 @@ def translate(file_dir, file_name, vocabulary,
 
         step = chunk_size // processes
 
-        if not ngram:
+        if translate_mode == 'list':
             translate_chunk = chunk
             for i in range(max_length):
                 translate_chunk['v_{}'.format(i)] = 0  # 0 for unknown
@@ -303,42 +303,56 @@ def translate(file_dir, file_name, vocabulary,
                 translate_chunk = pd.concat(results)
             translate_chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
 
-        else:
+        elif translate_mode == 'ngram':
             ngram_chunk = chunk
             with Pool(processes) as pool:
                 splits = [ngram_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
-                results = pool.starmap(_create_ngram, zip(splits, repeat(vocab),
-                                                          repeat(unknown), repeat(window)))
+                results = pool.starmap(_create_ngram, zip(splits, repeat(window)))
                 new_ngram = pd.concat(results)
             new_ngram.to_csv(os.path.join(new_dir, ngram_name), index=False, mode=mode, header=header)
+
+        elif translate_mode == 'document':
+            str_chunk = chunk
+            with Pool(processes) as pool:
+                splits = [str_chunk.iloc[i * step: step * (i + 1)] for i in range(processes)]
+                results = pool.starmap(_translate_comment_str, zip(splits, repeat(word_to_id),
+                                                                   repeat(vocab), repeat(unknown)))
+                str_chunk = pd.concat(results)
+            str_chunk.to_csv(os.path.join(new_dir, new_name), index=False, mode=mode, header=header)
 
     print('Complete')
 
 
-def _create_ngram(df, vocab, unknown, window):
+def _create_ngram(df, window):
     """Helper function for creating ngram
     """
-    def lookup(word):
-        try:
-            translated_word = translation_table[word]
-        except KeyError:
-            translated_word = translation_table[unknown]
-        return translated_word
-
     ngram_df = pd.DataFrame(columns=['target', 'context'])
-    translation_table = vocab[0]
     either_side = (window - 1) // 2
 
     for _, entry in df.iterrows():
         comment_text = entry['comment_text'].split(' ')
 
         for index in range(either_side, len(comment_text) - either_side):
-            translated = lookup(comment_text[index])
-
             for pos in range(1, either_side + 1):
-                ngram_df.loc[len(ngram_df)] = [translated, lookup(comment_text[index - pos])]
-                ngram_df.loc[len(ngram_df)] = [translated, lookup(comment_text[index + pos])]
+                ngram_df.loc[len(ngram_df)] = [comment_text[index], comment_text[index - pos]]
+                ngram_df.loc[len(ngram_df)] = [comment_text[index], comment_text[index + pos]]
     return ngram_df
+
+
+def _translate_comment_str(df, word_to_id, vocab,
+                           unknown):
+    translation_table = vocab[0] if word_to_id else vocab[1]
+    for row, entry in df.iterrows():
+        comment_text = entry['comment_text'].split(' ')
+        translated = []
+        for index, word in enumerate(comment_text):
+            try:
+                translated_word = str(translation_table[word])
+            except KeyError:
+                translated_word = str(translation_table[unknown])
+            translated.append(translated_word)
+        df.at[row, 'comment_text'] = ' '.join(translated)
+    return df
 
 
 def _translate_comment(df, word_to_id, vocab,
