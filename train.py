@@ -98,7 +98,7 @@ if __name__ == '__main__':
                         help='Number of epochs', type=int, default=100)
     parser.add_argument('-v', '--vocab', dest='vocab_size',
                         help='Vocabulary size', type=int, required=True)
-    parser.add_argument('-e', '--embedding', dest='embedding_size',
+    parser.add_argument('--embedding', dest='embedding_size',
                         help='Embedding size', type=int, default=100)
     parser.add_argument('-l', '--labels', dest='num_labels',
                         help='Number of labels', type=int, required=True)
