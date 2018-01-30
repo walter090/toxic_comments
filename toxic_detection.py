@@ -1,24 +1,7 @@
-from functools import wraps
-
 import tensorflow as tf
 
 import structure
-
-
-def property_wrap(attr):
-    """Checks if the function has already been called"""
-
-    def de_facto_wrap(func):
-        @property
-        @wraps(func)
-        def decorator(self):
-            if getattr(self, attr) is None:
-                setattr(self, attr, func(self))
-            return getattr(self, attr)
-
-        return decorator
-
-    return de_facto_wrap
+from structure import property_wrap
 
 
 class ToxicityCNN:
