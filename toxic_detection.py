@@ -1,10 +1,11 @@
 import tensorflow as tf
 
 import structure
+from model import Model
 from structure import property_wrap
 
 
-class ToxicityCNN:
+class ToxicityCNN(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None):
@@ -16,36 +17,30 @@ class ToxicityCNN:
             num_epochs: int, number of epochs.
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
+            num_labels: int, number of labels.
+            comment_length: int, length of the each comment.
         """
-        self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
-        self.comment_length = comment_length
-        self.embedded = None
-        self.embedding_size = embedding_size
-        self.global_step = None
+        super(ToxicityCNN, self).__init__(vocab_size=vocab_size,
+                                          embedding_size=embedding_size)
+
         self.num_labels = num_labels
-        self.vocab_size = vocab_size
+        self.comment_length = comment_length
 
-        self._embeddings = None
-        self._loss = None
-        self._optimize = None
-        self._prediction = None
-
-        if csvs and batch_size and num_epochs and num_labels:
-            self.file_read_op(csvs, batch_size, num_labels, num_epochs, comment_length)
-
-        if vocab_size and embedding_size:
-            self.create_embedding(vocab_size, embedding_size)
+        if csvs and batch_size and num_epochs\
+                and num_labels and comment_length:
+            self.file_read_op(csvs, batch_size, num_epochs,
+                              num_labels, comment_length)
 
     def file_read_op(self, file_names, batch_size,
-                     num_labels, num_epochs, comment_length):
+                     num_epochs, num_labels=None, comment_length=None):
         """Read csv files in batch
 
         Args:
             file_names: list, list of file names.
             batch_size: int, batch size.
-            num_labels: int, number of labels.
             num_epochs: int, number of epochs.
-            comment_length: int, length of each comment
+            num_labels: int, number of labels.
+            comment_length: int, length of each comment.
 
         Returns:
             None
@@ -71,19 +66,6 @@ class ToxicityCNN:
             [comment_text, toxicity, comment_id], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
         self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
-
-    def create_embedding(self, vocab_size, embedding_size):
-        """ Create embedding
-
-        Args:
-            vocab_size: Int, vocabulary size.
-            embedding_size: Int, size of word vector.
-
-        Returns:
-            None
-        """
-        self.vocab_size = vocab_size
-        self.embedding_size = embedding_size
 
     def network(self, x_input=None, num_output=None,
                 layer_config=None, fully_conn_config=None, pool='max',
