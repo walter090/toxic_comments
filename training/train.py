@@ -132,10 +132,17 @@ if __name__ == '__main__':
                         help='Comment length', type=int, default=60)
     parser.add_argument('-s', '--sfreq', dest='save_freq',
                         help='Save frequency', type=int, default=1000)
-    parser.add_argument()
+    parser.add_argument('-m', '--mode', dest='mode',
+                        help='Training mode', type=str, default='emb')
 
     args = parser.parse_args()
 
-    train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
-              vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
-              comment_length=args.comment_length, save_freq=args.save_freq)
+    if args.mode == 'cnn':
+        train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
+                  vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
+                  comment_length=args.comment_length, save_freq=args.save_freq)
+
+    if args.mode == 'emb':
+        train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
+                           num_epochs=args.num_epochs, vocab_size=args.vocab_size,
+                           embedding_size=args.embedding_size, save_freq=args.save_freq)
