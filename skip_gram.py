@@ -70,6 +70,13 @@ class WordEmbedding(Model):
 
     @property_wrap('_optimize')
     def optimize(self):
+        self.global_step = tf.Variable(0, trainable=False, name='global_step')
+
+        optimizer = tf.train.AdamOptimizer(1e-4)
+        grads = optimizer.compute_gradients(self.loss)
+
+        self._optimize = grads, optimizer.apply_gradients(grads_and_vars=grads,
+                                                          global_step=self.global_step)
         return self._optimize
 
     @property_wrap('_embeddings')
