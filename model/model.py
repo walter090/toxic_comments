@@ -18,19 +18,16 @@ class Model:
         self._optimize = None
         self._prediction = None
 
-        if vocab_size and embedding_size:
-            self.create_embedding(vocab_size, embedding_size)
-
     def create_embedding(self, vocab_size, embedding_size):
         """ Create embedding
 
-                Args:
-                    vocab_size: Int, vocabulary size.
-                    embedding_size: Int, size of word vector.
+            Args:
+                vocab_size: Int, vocabulary size.
+                embedding_size: Int, size of word vector.
 
-                Returns:
-                    None
-                """
+            Returns:
+                None
+        """
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
 
