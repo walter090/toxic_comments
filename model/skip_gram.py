@@ -64,7 +64,7 @@ class WordEmbedding(Model):
                                      shape=[self.vocab_size],
                                      initializer=tf.zeros_initializer)
             self._loss = tf.nn.nce_loss(weights=weights, biases=biases,
-                                        labels=self.context_batch, inputs=self.target_batch,
+                                        labels=self.embedded_context, inputs=self.embedded,
                                         num_classes=self.vocab_size, num_sampled=2000)
         return self._loss
 
