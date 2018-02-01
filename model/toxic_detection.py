@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 import structure
-from model import Model
+from .model import Model
 from structure import property_wrap
 
 

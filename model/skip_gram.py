@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from model import Model
+from .model import Model
 from structure import property_wrap
 
 
