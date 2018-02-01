@@ -25,6 +25,7 @@ class ToxicityCNN(Model):
 
         self.num_labels = num_labels
         self.comment_length = comment_length
+        self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
 
         if csvs and batch_size and num_epochs\
                 and num_labels and comment_length:
