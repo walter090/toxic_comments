@@ -63,10 +63,12 @@ class WordEmbedding(Model):
             biases = tf.get_variable(name='nce_biases',
                                      shape=[self.vocab_size],
                                      initializer=tf.zeros_initializer)
-            self._loss = tf.nn.nce_loss(weights=weights, biases=biases,
-                                        labels=self.embedded_context, inputs=self.embedded,
-                                        num_classes=self.vocab_size, num_sampled=2000)
-        return self._loss
+
+            self._loss = tf.reduce_mean(
+                tf.nn.nce_loss(weights=weights, biases=biases,
+                               labels=tf.expand_dims(self.context_batch, -1), inputs=self.embedded,
+                               num_classes=self.vocab_size, num_sampled=1000))
+            return self._loss
 
     @property_wrap('_optimize')
     def optimize(self):
