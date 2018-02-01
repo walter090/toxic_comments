@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
 
 from model.toxic_detection import ToxicityCNN
+from model.skip_gram import WordEmbedding
 
 
 def train(model, verbose_freq=200, save_freq=2000,
@@ -101,6 +102,17 @@ def train_cnn(csvs, vocab_size=18894, batch_size=2000,
           model_dir=model_dir, metadata=metadata)
 
 
+def train_word_vectors(csvs, vocab_size=18894, batch_size=2000,
+                       num_epochs=160, embedding_size=100, verbose_freq=200,
+                       save_freq=2000, restore=False, meta=None,
+                       log_dir=None, model_dir=None, metadata=None):
+    model = WordEmbedding(csvs=csvs, vocab_size=vocab_size, batch_size=batch_size,
+                          num_epochs=num_epochs, embedding_size=embedding_size)
+    train(model, verbose_freq=verbose_freq, save_freq=save_freq,
+          restore=restore, meta=meta, log_dir=log_dir,
+          model_dir=model_dir, metadata=metadata)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -109,17 +121,18 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--batch', dest='batch_size',
                         help='Specify batch size', type=int, default=2000)
     parser.add_argument('-e', '--epochs', dest='num_epochs',
-                        help='Number of epochs', type=int, default=100)
+                        help='Number of epochs', type=int, default=160)
     parser.add_argument('-v', '--vocab', dest='vocab_size',
                         help='Vocabulary size', type=int, required=True)
     parser.add_argument('--embedding', dest='embedding_size',
                         help='Embedding size', type=int, default=100)
     parser.add_argument('-l', '--labels', dest='num_labels',
-                        help='Number of labels', type=int, required=True)
+                        help='Number of labels', type=int, default=6)
     parser.add_argument('-t', '--tlength', dest='comment_length',
-                        help='Comment length', type=int, required=True)
+                        help='Comment length', type=int, default=60)
     parser.add_argument('-s', '--sfreq', dest='save_freq',
                         help='Save frequency', type=int, default=1000)
+    parser.add_argument()
 
     args = parser.parse_args()
 
