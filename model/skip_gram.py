@@ -6,7 +6,7 @@ from structure import property_wrap
 
 class WordEmbedding(Model):
     def __init__(self, csvs=None, batch_size=None,
-                 num_epochs=None, vocab_size=None, embedding_size=None, ):
+                 num_epochs=None, vocab_size=None, embedding_size=None):
         super(WordEmbedding, self).__init__(vocab_size=vocab_size,
                                             embedding_size=embedding_size)
         self.target_batch, self.context_batch = None, None
@@ -56,7 +56,7 @@ class WordEmbedding(Model):
 
     @property_wrap('_loss')
     def loss(self):
-        with tf.get_variable('nce'):
+        with tf.variable_scope('nce'):
             weights = tf.get_variable(name='nce_weights',
                                       shape=[self.vocab_size, self.embedding_size],
                                       initializer=tf.truncated_normal_initializer)
