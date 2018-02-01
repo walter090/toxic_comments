@@ -5,7 +5,7 @@ import os
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
 
-from toxic_detection import ToxicityCNN
+from model.toxic_detection import ToxicityCNN
 
 
 def train(csvs, batch_size, num_epochs,
