@@ -38,7 +38,7 @@ class Model:
                      num_epochs, num_labels=None, comment_length=None):
         pass
 
-    def network(self):
+    def network(self, *args, **kwargs):
         pass
 
     @property_wrap('_prediction')
