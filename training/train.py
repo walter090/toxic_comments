@@ -8,16 +8,9 @@ from tensorflow.contrib.tensorboard.plugins import projector
 from model.toxic_detection import ToxicityCNN
 
 
-def train(csvs, batch_size, num_epochs,
-          vocab_size, embedding_size, num_labels,
-          verbose_freq=200, save_freq=2000, restore=False,
-          meta=None, comment_length=60, log_dir=None,
+def train(model, verbose_freq=200, save_freq=2000,
+          restore=False, meta=None, log_dir=None,
           model_dir=None, metadata=None):
-    model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
-                        num_epochs=num_epochs, vocab_size=vocab_size,
-                        embedding_size=embedding_size, num_labels=num_labels,
-                        comment_length=comment_length)
-
     timestamp = datetime.datetime.now().isoformat('_')
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
@@ -32,7 +25,7 @@ def train(csvs, batch_size, num_epochs,
 
     for grad_i, grad in enumerate(model_grads):
         tf.summary.histogram('grad_{}'.format(grad[0].name), grad[0])
-    
+
     all_summaries = tf.summary.merge_all()
 
     init_op = tf.group(tf.global_variables_initializer(),
@@ -50,7 +43,7 @@ def train(csvs, batch_size, num_epochs,
         projector.visualize_embeddings(writer, projector_config)
 
         sess.run(init_op)
-        saver = tf.train.Saver(var_list=tf.global_variables())
+        saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=7)
 
         if restore:
             restore_variables(meta, sess)
@@ -83,8 +76,29 @@ def train(csvs, batch_size, num_epochs,
 
 def restore_variables(meta, sess):
     tf.reset_default_graph()
-    imported = tf.train.import_meta_graph(meta)
-    imported.restore(sess, tf.train.latest_checkpoint('./'))
+    saver = tf.train.Saver()
+    saver.restore(sess=sess, save_path=meta)
+
+
+def restore_word_vectors(meta, sess):
+    tf.reset_default_graph()
+    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                                      'embedding'))
+    saver.restore(sess=sess, save_path=meta)
+
+
+def train_cnn(csvs, vocab_size=18894, batch_size=2000,
+              num_epochs=160, embedding_size=100, num_labels=6,
+              comment_length=60, verbose_freq=200, save_freq=2000,
+              restore=False, meta=None, log_dir=None,
+              model_dir=None, metadata=None):
+    model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
+                        num_epochs=num_epochs, vocab_size=vocab_size,
+                        embedding_size=embedding_size, num_labels=num_labels,
+                        comment_length=comment_length)
+    train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
+          restore=restore, meta=meta, log_dir=log_dir,
+          model_dir=model_dir, metadata=metadata)
 
 
 if __name__ == '__main__':
@@ -109,6 +123,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
-          vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
-          comment_length=args.comment_length, save_freq=args.save_freq)
+    train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
+              vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
+              comment_length=args.comment_length, save_freq=args.save_freq)
