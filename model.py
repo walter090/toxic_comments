@@ -8,7 +8,6 @@ class Model:
             vocab_size: int, vocabulary size for the word embeddings.
             embedding_size: int, size of each word vector.
         """
-        self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.embedded = None
         self.embedding_size = embedding_size
         self.global_step = None
