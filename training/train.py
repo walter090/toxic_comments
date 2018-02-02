@@ -102,7 +102,7 @@ def train_cnn(csvs, vocab_size=18894, batch_size=2000,
           model_dir=model_dir, metadata=metadata)
 
 
-def train_word_vectors(csvs, vocab_size=18894, batch_size=2000,
+def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
                        num_epochs=160, embedding_size=100, verbose_freq=200,
                        save_freq=2000, restore=False, meta=None,
                        log_dir=None, model_dir=None, metadata=None):
