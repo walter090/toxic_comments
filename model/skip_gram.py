@@ -67,7 +67,7 @@ class WordEmbedding(Model):
             self._loss = tf.reduce_mean(
                 tf.nn.nce_loss(weights=weights, biases=biases,
                                labels=tf.expand_dims(self.context_batch, -1), inputs=self.embedded,
-                               num_classes=self.vocab_size, num_sampled=1000))
+                               num_classes=self.vocab_size, num_sampled=100))
             return self._loss
 
     @property_wrap('_optimize')
