@@ -105,9 +105,11 @@ def train_cnn(csvs, vocab_size=18894, batch_size=2000,
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
                        num_epochs=160, embedding_size=100, verbose_freq=200,
                        save_freq=2000, restore=False, meta=None,
-                       log_dir=None, model_dir=None, metadata=None):
+                       log_dir=None, model_dir=None, metadata=None,
+                       nce_samples=64):
     model = WordEmbedding(csvs=csvs, vocab_size=vocab_size, batch_size=batch_size,
-                          num_epochs=num_epochs, embedding_size=embedding_size)
+                          num_epochs=num_epochs, embedding_size=embedding_size,
+                          nce_samples=nce_samples)
     train(model, verbose_freq=verbose_freq, save_freq=save_freq,
           restore=restore, meta=meta, log_dir=log_dir,
           model_dir=model_dir, metadata=metadata)
@@ -136,6 +138,8 @@ if __name__ == '__main__':
                         help='Training mode', type=str, default='emb')
     parser.add_argument('--metadata', dest='metadata', type=str,
                         help='Projector metadata file path')
+    parser.add_argument('--samples', dest='nce_samples', default=64,
+                        help='Negative sampling size', type=int)
 
     args = parser.parse_args()
 
@@ -148,4 +152,4 @@ if __name__ == '__main__':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
                            num_epochs=args.num_epochs, vocab_size=args.vocab_size,
                            embedding_size=args.embedding_size, save_freq=args.save_freq,
-                           metadata=args.metadata)
+                           metadata=args.metadata, nce_samples=args.nce_samples)

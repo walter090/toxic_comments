@@ -6,11 +6,13 @@ from structure import property_wrap
 
 class WordEmbedding(Model):
     def __init__(self, csvs=None, batch_size=None,
-                 num_epochs=None, vocab_size=None, embedding_size=None):
+                 num_epochs=None, vocab_size=None, embedding_size=None,
+                 nce_samples=64):
         super(WordEmbedding, self).__init__(vocab_size=vocab_size,
                                             embedding_size=embedding_size)
         self.target_batch, self.context_batch = None, None
         self.embedded_context = None
+        self.nce_samples = nce_samples
 
         if csvs and batch_size and num_epochs:
             self.file_read_op(file_names=csvs, batch_size=batch_size,
@@ -67,7 +69,7 @@ class WordEmbedding(Model):
             self._loss = tf.reduce_mean(
                 tf.nn.nce_loss(weights=weights, biases=biases,
                                labels=tf.expand_dims(self.context_batch, -1), inputs=self.embedded,
-                               num_classes=self.vocab_size, num_sampled=100))
+                               num_classes=self.vocab_size, num_sampled=self.nce_samples))
             return self._loss
 
     @property_wrap('_optimize')
