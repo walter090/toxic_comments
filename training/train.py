@@ -134,7 +134,7 @@ if __name__ == '__main__':
                         help='Save frequency', type=int, default=1000)
     parser.add_argument('-m', '--mode', dest='mode',
                         help='Training mode', type=str, default='emb')
-    parser.add_argument('--metadata', dest='metadata', type='str',
+    parser.add_argument('--metadata', dest='metadata', type=str,
                         help='Projector metadata file path')
 
     args = parser.parse_args()
