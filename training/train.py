@@ -49,7 +49,7 @@ def train(model, verbose_freq=200, save_freq=2000,
         if meta:
             restore_variables(meta, sess)
         if word_vector_meta:
-            restore_word_vectors(meta, sess)
+            restore_word_vectors(word_vector_meta, sess)
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
@@ -78,13 +78,11 @@ def train(model, verbose_freq=200, save_freq=2000,
 
 
 def restore_variables(meta, sess):
-    tf.reset_default_graph()
     saver = tf.train.Saver()
     saver.restore(sess=sess, save_path=meta)
 
 
 def restore_word_vectors(meta, sess):
-    tf.reset_default_graph()
     saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                                       'embedding'))
     saver.restore(sess=sess, save_path=meta)
