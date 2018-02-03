@@ -27,7 +27,7 @@ class ToxicityCNN(Model):
         self.comment_length = comment_length
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
 
-        if csvs and batch_size and num_epochs\
+        if csvs and batch_size and num_epochs \
                 and num_labels and comment_length:
             self.file_read_op(csvs, batch_size, num_epochs,
                               num_labels, comment_length)
@@ -202,10 +202,10 @@ class ToxicityCNN(Model):
             self._embeddings = tf.get_variable(name='embedding_w',
                                                shape=[self.vocab_size, self.embedding_size],
                                                initializer=tf.random_uniform_initializer(-1, 1))
-            masked_embeddings = tf.concat([tf.ones([1, 1]), tf.zeros([1, 1]),
-                                           tf.ones([self._embeddings.get_shape()[0] - 2, 1])],
-                                          axis=0)
-            embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
-            masked_embedded = tf.nn.embedding_lookup(masked_embeddings, self.comment_batch)
-            self.embedded = tf.matmul(embedded, masked_embedded)
+
+            mask_indices = [1]
+            self._embeddings = tf.scatter_update(ref=self._embeddings, indices=mask_indices,
+                                                 updates=tf.zeros([len(mask_indices), 30]))
+            self.embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
+
             return self._embeddings
