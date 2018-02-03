@@ -85,7 +85,7 @@ def restore_variables(meta, sess):
 
 def restore_word_vectors(meta, sess):
     tf.reset_default_graph()
-    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                                       'embedding'))
     saver.restore(sess=sess, save_path=meta)
 
