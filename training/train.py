@@ -149,7 +149,8 @@ if __name__ == '__main__':
     if args.mode == 'cnn':
         train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
                   vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
-                  comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata)
+                  comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
+                  word_vector_meta=args.word_vector_meta)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
