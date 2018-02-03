@@ -122,9 +122,9 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', nargs='+',
                         help='Set training data csv files', required=True, dest='csvs')
     parser.add_argument('-b', '--batch', dest='batch_size',
-                        help='Specify batch size', type=int, default=2000)
+                        help='Specify batch size', type=int, default=516)
     parser.add_argument('-e', '--epochs', dest='num_epochs',
-                        help='Number of epochs', type=int, default=160)
+                        help='Number of epochs', type=int, default=100)
     parser.add_argument('-v', '--vocab', dest='vocab_size',
                         help='Vocabulary size', type=int, required=True)
     parser.add_argument('--embedding', dest='embedding_size',
