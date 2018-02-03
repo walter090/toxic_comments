@@ -8,7 +8,7 @@ from structure import property_wrap
 class ToxicityCNN(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
-                 num_labels=None, comment_length=None):
+                 num_labels=None, comment_length=None, testing=False):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -26,6 +26,7 @@ class ToxicityCNN(Model):
         self.num_labels = num_labels
         self.comment_length = comment_length
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
+        self.testing = testing
 
         if csvs and batch_size and num_epochs \
                 and num_labels and comment_length:
@@ -160,8 +161,10 @@ class ToxicityCNN(Model):
         output_fully_conn = output_flat
 
         for layer_i, layer in enumerate(fully_conn_config):
-            output_fully_conn = structure.fully_conn(output_fully_conn, num_output=layer[0],
-                                                     activation=layer[1], keep_prob=layer[2],
+            output_fully_conn = structure.fully_conn(output_fully_conn,
+                                                     num_output=layer[0],
+                                                     activation=layer[1],
+                                                     keep_prob=layer[2] if not self.testing else 1.,
                                                      name='fc_{}'.format(layer_i))
 
         output_logits = structure.fully_conn(output_fully_conn, num_output=num_output,
