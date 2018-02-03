@@ -141,6 +141,8 @@ if __name__ == '__main__':
                         help='Projector metadata file path')
     parser.add_argument('--samples', dest='nce_samples', default=64,
                         help='Negative sampling size', type=int)
+    parser.add_argument('--word', dest='word_vector_meta', type=str,
+                        help='Path to saved word vector variables')
 
     args = parser.parse_args()
 
