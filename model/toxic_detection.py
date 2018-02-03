@@ -202,10 +202,15 @@ class ToxicityCNN(Model):
             self._embeddings = tf.get_variable(name='embedding_w',
                                                shape=[self.vocab_size, self.embedding_size],
                                                initializer=tf.random_uniform_initializer(-1, 1))
+            embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
 
-            mask_indices = [1]
-            self._embeddings = tf.scatter_update(ref=self._embeddings, indices=mask_indices,
-                                                 updates=tf.zeros([len(mask_indices), self.embedding_size]))
-            self.embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
+            mask = tf.concat([tf.ones([1, self.embedding_size]),
+                              tf.zeros([1, self.embedding_size]),
+                              tf.ones([self.vocab_size - 1, self.embedding_size])], axis=0)
+            embedded_masked = tf.nn.embedding_lookup(mask, self.comment_batch)
+            embedded = tf.multiply(embedded, embedded_masked)
+
+            # Expand embedding lookup results for cnn
+            self.embedded = tf.expand_dims(embedded, axis=-1)
 
             return self._embeddings
