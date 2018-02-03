@@ -10,8 +10,8 @@ from model.skip_gram import WordEmbedding
 
 
 def train(model, verbose_freq=200, save_freq=2000,
-          restore=False, meta=None, log_dir=None,
-          model_dir=None, metadata=None):
+          meta=None, log_dir=None, model_dir=None,
+          metadata=None, word_vector_meta=None):
     timestamp = datetime.datetime.now().isoformat('_')
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
@@ -46,8 +46,10 @@ def train(model, verbose_freq=200, save_freq=2000,
         sess.run(init_op)
         saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=7)
 
-        if restore:
+        if meta:
             restore_variables(meta, sess)
+        if word_vector_meta:
+            restore_word_vectors(meta, sess)
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
@@ -91,28 +93,27 @@ def restore_word_vectors(meta, sess):
 def train_cnn(csvs, vocab_size=18894, batch_size=2000,
               num_epochs=160, embedding_size=100, num_labels=6,
               comment_length=60, verbose_freq=200, save_freq=2000,
-              restore=False, meta=None, log_dir=None,
+              word_vector_meta=None, meta=None, log_dir=None,
               model_dir=None, metadata=None):
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
                         embedding_size=embedding_size, num_labels=num_labels,
                         comment_length=comment_length)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
-          restore=restore, meta=meta, log_dir=log_dir,
-          model_dir=model_dir, metadata=metadata)
+          meta=meta, log_dir=log_dir, model_dir=model_dir,
+          metadata=metadata, word_vector_meta=word_vector_meta)
 
 
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
                        num_epochs=160, embedding_size=100, verbose_freq=200,
-                       save_freq=2000, restore=False, meta=None,
-                       log_dir=None, model_dir=None, metadata=None,
-                       nce_samples=64):
+                       save_freq=2000, meta=None, log_dir=None,
+                       model_dir=None, metadata=None, nce_samples=64):
     model = WordEmbedding(csvs=csvs, vocab_size=vocab_size, batch_size=batch_size,
                           num_epochs=num_epochs, embedding_size=embedding_size,
                           nce_samples=nce_samples)
     train(model, verbose_freq=verbose_freq, save_freq=save_freq,
-          restore=restore, meta=meta, log_dir=log_dir,
-          model_dir=model_dir, metadata=metadata)
+          meta=meta, log_dir=log_dir, model_dir=model_dir,
+          metadata=metadata)
 
 
 if __name__ == '__main__':
