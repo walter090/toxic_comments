@@ -205,7 +205,7 @@ class ToxicityCNN(Model):
 
             mask_indices = [1]
             self._embeddings = tf.scatter_update(ref=self._embeddings, indices=mask_indices,
-                                                 updates=tf.zeros([len(mask_indices), 30]))
+                                                 updates=tf.zeros([len(mask_indices), self.embedding_size]))
             self.embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
 
             return self._embeddings
