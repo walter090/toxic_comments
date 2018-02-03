@@ -211,6 +211,6 @@ class ToxicityCNN(Model):
                               tf.zeros([1, self.embedding_size]),
                               tf.ones([self.vocab_size - 1, self.embedding_size])], axis=0)
             embedded_masked = tf.nn.embedding_lookup(mask, self.comment_batch)
-            embedded = tf.multiply(embedded, embedded_masked)
+            self.embedded = tf.multiply(embedded, embedded_masked)
 
             return self._embeddings
