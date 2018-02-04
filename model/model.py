@@ -15,6 +15,7 @@ class Model:
 
         self._embeddings = None
         self._loss = None
+        self._metric = None
         self._optimize = None
         self._prediction = None
 
@@ -46,6 +47,10 @@ class Model:
     @property_wrap('_loss')
     def loss(self):
         return self._loss
+
+    @property_wrap('_metric')
+    def metric(self):
+        return self._metric
 
     @property_wrap('_optimize')
     def optimize(self):
