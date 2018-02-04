@@ -12,6 +12,22 @@ from model.skip_gram import WordEmbedding
 def train(model, verbose_freq=200, save_freq=2000,
           meta=None, log_dir=None, model_dir=None,
           metadata=None, word_vector_meta=None):
+    """Function for training models
+
+    Args:
+        model: Model, object of the model to be trained.
+        verbose_freq: int, frequency of update message.
+        save_freq: int, step interval to save the variables.
+        meta: string, path to the saved variables for continue training. Optional,
+            defaults None.
+        log_dir: string, directory to save tensorboard summaries.
+        model_dir: string, directory to save variables.
+        metadata: string, path to the metadata that maps IDs to words.
+        word_vector_meta: string, path to the saved word vectors.
+
+    Returns:
+        None
+    """
     timestamp = datetime.datetime.now().isoformat('_')
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
