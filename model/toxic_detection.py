@@ -188,6 +188,12 @@ class ToxicityCNN(Model):
         self._loss = loss
         return self._loss
 
+    @property_wrap('_metric')
+    def metric(self):
+        self._metric = tf.metrics.auc(labels=self.toxicity_batch,
+                                      predictions=self._prediction)
+        return self._metric
+
     @property_wrap('_optimize')
     def optimize(self):
         self.global_step = tf.Variable(0, trainable=False, name='global_step')
