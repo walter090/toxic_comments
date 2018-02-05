@@ -190,9 +190,9 @@ class ToxicityCNN(Model):
 
     @property_wrap('_metric')
     def metric(self):
-        auc, _ = tf.metrics.auc(labels=self.toxicity_batch,
-                                predictions=self._prediction)
-        self._metric = tf.reduce_mean(auc)
+        auc, auc_op = tf.metrics.auc(labels=self.toxicity_batch,
+                                     predictions=self._prediction)
+        self._metric = tf.reduce_mean(auc), auc_op
         return self._metric
 
     @property_wrap('_optimize')
