@@ -170,9 +170,8 @@ class ToxicityCNN(Model):
         output_logits = structure.fully_conn(output_fully_conn, num_output=num_output,
                                              name='fc_out', activation=None)
         output = tf.nn.sigmoid(output_logits)
-        prediction = tf.argmax(output, axis=1)
 
-        return output_logits, output, prediction
+        return output_logits, output
 
     @property_wrap('_prediction')
     def prediction(self):
@@ -181,7 +180,7 @@ class ToxicityCNN(Model):
 
     @property_wrap('_loss')
     def loss(self):
-        logits, output, pred = self.prediction
+        logits, output = self.prediction
         losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
         loss = tf.reduce_mean(losses)
 
