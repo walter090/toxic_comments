@@ -182,10 +182,7 @@ def batch_normalize(x, epsilon=1e-5):
         offset = tf.get_variable('bn_bias',
                                  shape=[x.get_shape().as_list()[-1]],
                                  initializer=tf.zeros_initializer())
-        normalized = tf.nn.batch_normalization(x=x,
-                                               mean=mean,
-                                               variance=variance,
-                                               offset=offset,
-                                               scale=scale,
-                                               variance_epsilon=epsilon)
+        normalized = tf.nn.batch_normalization(x=x, mean=mean,
+                                               variance=variance, offset=offset,
+                                               scale=scale, variance_epsilon=epsilon)
         return normalized
