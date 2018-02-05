@@ -37,8 +37,10 @@ def train(model, verbose_freq=200, save_freq=2000,
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
+    model_auc = model.metric
 
     tf.summary.scalar('loss', model_loss)
+    tf.summary.scalar('AUC', model_auc)
 
     for grad_i, grad in enumerate(model_grads):
         tf.summary.histogram('grad_{}'.format(grad[0].name), grad[0])
@@ -72,14 +74,15 @@ def train(model, verbose_freq=200, save_freq=2000,
 
         try:
             while not coord.should_stop():
-                _, step, loss, summaries = sess.run([model_optimization, model_step,
-                                                     model_loss, all_summaries])
+                _, step, loss, auc, summaries = sess.run([model_optimization, model_step,
+                                                          model_loss, model_auc,
+                                                          all_summaries])
 
                 writer.add_summary(summaries, global_step=step)
 
                 cur_time = datetime.datetime.now().isoformat('-')
                 if step % verbose_freq == 0:
-                    print('{} - At step {}, loss {}'.format(cur_time, step, loss))
+                    print('{} - At step {}, loss {}, AUC {}'.format(cur_time, step, loss, auc))
                 if step % save_freq == 0:
                     saver.save(sess, save_path=model_dir, global_step=step)
 
