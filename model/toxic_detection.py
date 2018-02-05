@@ -181,7 +181,7 @@ class ToxicityCNN(Model):
 
     @property_wrap('_loss')
     def loss(self):
-        logits, output, pred = self._prediction
+        logits, output, pred = self.prediction
         losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
         loss = tf.reduce_mean(losses)
 
@@ -191,7 +191,7 @@ class ToxicityCNN(Model):
     @property_wrap('_metric')
     def metric(self):
         _, auc = tf.metrics.auc(labels=self.toxicity_batch,
-                                predictions=self._prediction[-1])
+                                predictions=self.prediction[-1])
         self._metric = auc
         return self._metric
 
