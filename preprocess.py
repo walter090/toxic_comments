@@ -11,7 +11,8 @@ from nltk.corpus import stopwords
 
 
 def tokenize_comments(file_dir, file_name, chunk_size=20000,
-                      new_dir=None, new_name='tokenized.csv', lower_case=True):
+                      new_dir=None, new_name='tokenized.csv', lower_case=True,
+                      keep_stopwords=False):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
@@ -23,6 +24,7 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
         chunk_size: int, size of each chunk.
         new_dir: dict, directory to save the new file to.
         lower_case: boolean, set True to convert all words to lower case.
+        keep_stopwords: boolean, set True to keep stopwords in document.
 
     Returns:
         New file location
@@ -44,7 +46,7 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
             except TypeError:
                 continue
             word_list = [word if not lower_case else word.lower() for word in word_list if
-                         word not in punctuations and word not in stopwords]
+                         word not in punctuations and (word not in stopwords and not keep_stopwords)]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
