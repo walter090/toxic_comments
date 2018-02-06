@@ -171,7 +171,11 @@ class ToxicityCNN(Model):
                                              name='fc_out', activation=None)
         output = tf.nn.sigmoid(output_logits)
 
-        return output_logits, output
+        threshold = tf.constant([0.5] * 6)
+        condition = tf.less(threshold, output)
+        prediction = tf.where(condition, tf.ones_like(output), tf.zeros_like(output))
+
+        return output_logits, output, prediction
 
     @property_wrap('_prediction')
     def prediction(self):
@@ -180,7 +184,7 @@ class ToxicityCNN(Model):
 
     @property_wrap('_loss')
     def loss(self):
-        logits, output = self.prediction
+        logits, output, _ = self.prediction
         losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
         loss = tf.reduce_mean(losses)
 
@@ -190,7 +194,7 @@ class ToxicityCNN(Model):
     @property_wrap('_metric')
     def metric(self):
         _, auc = tf.metrics.auc(labels=self.toxicity_batch,
-                                predictions=self.prediction[-1])
+                                predictions=self.prediction[1])
         self._metric = auc
         return self._metric
 
