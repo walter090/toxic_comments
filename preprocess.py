@@ -38,7 +38,10 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
     for index, chunk in enumerate(df_chunk):
         print('Tokenizing chunk {}'.format(index), end='...')
         for row, entry in chunk.iterrows():
-            word_list = nltk.word_tokenize(entry['comment_text'])
+            try:
+                word_list = nltk.word_tokenize(entry['comment_text'])
+            except TypeError:
+                continue
             word_list = [word if not lower_case else word.lower() for word in word_list if
                          word not in punctuations]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
@@ -55,8 +58,8 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
     return os.path.join(file_dir, new_name)
 
 
-def add_padding(file_dir, file_name, new_file=False,
-                new_dir='padded', max_length=60, new_name='padded.csv'):
+def add_padding(file_dir, file_name, new_dir=None,
+                max_length=60, new_name='padded.csv'):
     """Add padding or cut off comments to make sure all the comments have the same length.
 
     Args:
@@ -64,8 +67,6 @@ def add_padding(file_dir, file_name, new_file=False,
         file_name: String, name of the target csv file.
         new_dir: String, new directory to save modified csv file.
         max_length: Int, the length of comment should pad to.
-        new_file: Boolean, set True to save as a new file in the specified directory,
-            the operation will be performed in place otherwise.
         new_name: string, name for new saved file.
 
     Returns:
@@ -83,6 +84,7 @@ def add_padding(file_dir, file_name, new_file=False,
         Returns:
             padded_comment: String, padded comment.
         """
+        comment = str(comment)
         comment_list = comment.split(' ')
         short = pad_to - len(comment_list)
 
@@ -97,7 +99,7 @@ def add_padding(file_dir, file_name, new_file=False,
     df['comment_text'] = df['comment_text'].apply(lambda comment: pad(comment, max_length))
 
     # Save as new file or overwrite
-    if new_file:
+    if new_dir:
         os.mkdir(os.path.join(file_dir, new_dir))
         save_to = os.path.join(file_dir, new_dir, new_name)
     else:
@@ -270,8 +272,20 @@ def translate(file_dir, file_name, vocabulary,
     processes = cpu_count()
 
     if vocabulary.__class__.__name__ == 'str':
-        with open(vocabulary, 'rb') as loader:
-            vocab = pickle.load(loader)
+        ext = vocabulary.split('.')[-1]
+        if ext == 'pickle':
+            with open(vocabulary, 'rb') as loader:
+                vocab = pickle.load(loader)
+        elif ext == 'tsv':
+            vocab = [{}, {}]
+            with open(vocabulary) as file:
+                for line in file:
+                    id_, word = line.split()
+                    try:
+                        vocab[0][word] = int(id_)
+                        vocab[1][int(id_)] = word
+                    except ValueError:
+                        continue
     else:
         vocab = vocabulary
 
