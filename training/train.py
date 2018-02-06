@@ -113,9 +113,8 @@ def test(model, meta, verbose_freq=20):
             step = 0
             while not coord.should_stop():
                 loss, auc = sess.run([model_loss, model_auc])
-                cur_time = datetime.datetime.now().isoformat('_')
                 if step % verbose_freq == 0:
-                    print('loss {}, AUC {}'.format(cur_time, step, loss, auc))
+                    print('At step {}: loss {}, AUC {}'.format(step, loss, auc))
                 step += 1
         except tf.errors.OutOfRangeError:
             print('Done testing.')
