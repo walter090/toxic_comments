@@ -7,6 +7,7 @@ from multiprocessing import cpu_count, Pool
 
 import nltk
 import pandas as pd
+from nltk.corpus import stopwords
 
 
 def tokenize_comments(file_dir, file_name, chunk_size=20000,
@@ -43,7 +44,7 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
             except TypeError:
                 continue
             word_list = [word if not lower_case else word.lower() for word in word_list if
-                         word not in punctuations]
+                         word not in punctuations and word not in stopwords]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
