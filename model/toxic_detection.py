@@ -102,9 +102,9 @@ class ToxicityCNN(Model):
         def pool_size(ksize):
             return self.comment_length - ksize + 1
 
+        x_input = self.embeddings[1]
         with tf.variable_scope(name, reuse=reuse_variables):
             if not (x_input and num_output):
-                x_input = self.embeddings[1]
                 x_input = tf.expand_dims(x_input, -1)
                 num_output = self.num_labels
 
