@@ -33,11 +33,11 @@ def train(model, verbose_freq=200, save_freq=2000,
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
-    model_embeddings = model.embeddings  # 18895
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
     model_loss = model.loss
     model_auc = model.metric
+    model_embeddings = model.embeddings[0]  # 18895
 
     tf.summary.scalar('loss', model_loss)
     tf.summary.scalar('AUC', model_auc)
