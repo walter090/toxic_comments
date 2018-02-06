@@ -71,7 +71,7 @@ class ToxicityCNN(Model):
         )
         self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
 
-    def network(self, x_input=None, num_output=None,
+    def network(self, x_input, num_output,
                 layer_config=None, fully_conn_config=None, pool='max',
                 name='network', padding='VALID', batchnorm=False,
                 reuse_variables=False):
@@ -102,11 +102,8 @@ class ToxicityCNN(Model):
         def pool_size(ksize):
             return self.comment_length - ksize + 1
 
-        x_input = self.embeddings[1]
         with tf.variable_scope(name, reuse=reuse_variables):
-            if not (x_input and num_output):
-                x_input = tf.expand_dims(x_input, -1)
-                num_output = self.num_labels
+            x_input = tf.expand_dims(x_input, -1)
 
             layer_config = [
                 # Convolution layer configuration
@@ -181,7 +178,8 @@ class ToxicityCNN(Model):
 
     @property_wrap('_prediction')
     def prediction(self):
-        self._prediction = self.network()
+        self._prediction = self.network(x_input=self.embeddings[1],
+                                        num_output=self.num_labels)
         return self._prediction
 
     @property_wrap('_loss')
