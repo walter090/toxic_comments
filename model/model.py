@@ -32,8 +32,7 @@ class Model:
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
 
-    def file_read_op(self, file_names, batch_size,
-                     num_epochs, num_labels=None, comment_length=None):
+    def file_read_op(self, *args, **kwargs):
         pass
 
     def network(self, *args, **kwargs):
