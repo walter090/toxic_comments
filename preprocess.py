@@ -386,3 +386,12 @@ def _translate_comment(df, word_to_id, vocab,
             df.at[row, 'v_{}'.format(index)] = translated_word
 
     return df
+
+
+def split_data(file_dir, file_name, test_size=0.2):
+    df = pd.read_csv(os.path.join(file_dir, file_name))
+    df_test = df.sample(frac=test_size)
+    df_train = df.drop(df_test.index)
+
+    df_train.to_csv(os.path.join(file_dir, 'train_split.csv'), index=False)
+    df_test.to_csv(os.path.join(file_dir, 'test_split.csv'), index=False)
