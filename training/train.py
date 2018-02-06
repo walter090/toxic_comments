@@ -144,7 +144,7 @@ def test_cnn(csvs, meta,
     test(model, meta=meta)
 
 
-def train_cnn(csvs, vocab_size=18895, batch_size=516,
+def train_cnn(csvs, vocab_size=18895, batch_size=512,
               num_epochs=150, embedding_size=100, num_labels=6,
               comment_length=60, verbose_freq=200, save_freq=2000,
               word_vector_meta=None, meta=None, log_dir=None,
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', nargs='+',
                         help='Set training data csv files', required=True, dest='csvs')
     parser.add_argument('-b', '--batch', dest='batch_size',
-                        help='Specify batch size', type=int, default=516)
+                        help='Specify batch size', type=int, default=512)
     parser.add_argument('-e', '--epochs', dest='num_epochs',
                         help='Number of epochs', type=int, default=100)
     parser.add_argument('-v', '--vocab', dest='vocab_size',
