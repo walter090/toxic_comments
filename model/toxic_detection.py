@@ -33,13 +33,12 @@ class ToxicityCNN(Model):
             self.file_read_op(csvs, batch_size, num_epochs,
                               num_labels, comment_length)
 
-    def file_read_op(self, file_names, validation_files, batch_size,
-                     num_epochs, num_labels=None, comment_length=None):
+    def file_read_op(self, file_names, batch_size,
+                     num_epochs, num_labels, comment_length):
         """Read csv files in batch
 
         Args:
             file_names: list, list of file names.
-            validation_files: list, list of validation file names.
             batch_size: int, batch size.
             num_epochs: int, number of epochs.
             num_labels: int, number of labels.
