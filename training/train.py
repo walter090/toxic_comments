@@ -80,7 +80,7 @@ def train(model, verbose_freq=200, save_freq=2000,
 
                 writer.add_summary(summaries, global_step=step)
 
-                cur_time = datetime.datetime.now().isoformat('-')
+                cur_time = datetime.datetime.now().isoformat('_')
                 if step % verbose_freq == 0:
                     print('{} - At step {}, loss {}, AUC {}'.format(cur_time, step, loss, auc))
                 if step % save_freq == 0:
@@ -94,6 +94,34 @@ def train(model, verbose_freq=200, save_freq=2000,
         coord.join(threads)
         saver = tf.train.Saver(var_list=tf.global_variables())
         saver.save(sess, save_path=model_dir)
+
+
+def test(model, meta, verbose_freq=20):
+    model_step = model.global_step
+    model_loss = model.loss
+    model_auc = model.metric
+
+    init_op = tf.group(tf.global_variables_initializer(),
+                       tf.local_variables_initializer())
+
+    with tf.Session() as sess:
+        sess.run(init_op)
+        restore_variables(meta, sess)
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+
+        try:
+            while not coord.should_stop():
+                step, loss, auc = sess.run([model_step, model_loss, model_auc])
+                cur_time = datetime.datetime.now().isoformat('_')
+                if step % verbose_freq == 0:
+                    print('{} - At step {}, loss {}, AUC {}'.format(cur_time, step, loss, auc))
+        except tf.errors.OutOfRangeError:
+            print('Done testing.')
+        finally:
+            coord.request_stop()
+
+        coord.join(threads)
 
 
 def restore_variables(meta, sess):
