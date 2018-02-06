@@ -117,7 +117,7 @@ class ToxicityCNN(Model):
 
         with tf.variable_scope(name, reuse=reuse_variables):
             if not (x_input and num_output):
-                x_input = self.embedded
+                x_input = self.embeddings[1]
                 x_input = tf.expand_dims(x_input, -1)
                 num_output = self.num_labels
 
@@ -238,4 +238,4 @@ class ToxicityCNN(Model):
             embedded_masked = tf.nn.embedding_lookup(mask, self.comment_batch)
             self.embedded = tf.multiply(embedded, embedded_masked)
 
-            return self._embeddings
+            return self._embeddings, self.embedded
