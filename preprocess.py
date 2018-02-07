@@ -6,6 +6,7 @@ from itertools import repeat
 from multiprocessing import cpu_count, Pool
 
 import nltk
+import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 
@@ -398,3 +399,43 @@ def split_data(file_dir, file_name, test_size=0.2):
 
     df_train.to_csv(os.path.join(file_dir, 'train_split.csv'), index=False)
     df_test.to_csv(os.path.join(file_dir, 'test_split.csv'), index=False)
+
+
+def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
+                          limit=30000):
+    """ Extract vocabulary and embeddings from pre trained embedding file.
+
+    Args:
+        vec_file: string, name of embedding file.
+        pad: string, pad word token.
+        unknown: string, unknown word token
+        limit: int, upper limit of vocab.
+
+    Returns:
+        word2id: dict, string word to id mapping.
+        embeddings: list, list of word vectors.
+    """
+    word2id = {pad: 0, unknown: 1}
+    embeddings = []
+
+    with open(vec_file) as file:
+        for index, entry in enumerate(file):
+            values = entry.split()
+            word = values[0]
+            weights = np.asarray(values[1:], dtype=np.float32)
+
+            word2id[word] = index + 2
+            embeddings.append(weights)
+
+            if index + 1 == limit:
+                break
+
+    embedding_size = len(embeddings[0])
+    # Random for unknown
+    embeddings.insert(0, np.random.randn(embedding_size))
+    # Random for padding, padding will be masked during lookup.
+    embeddings.insert(0, np.random.randn(embedding_size))
+
+    embeddings = np.asarray(embeddings, dtype=np.float32)
+
+    return word2id, embeddings
