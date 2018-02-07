@@ -8,7 +8,8 @@ from structure import property_wrap
 class ToxicityCNN(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
-                 num_labels=None, comment_length=None, testing=False):
+                 num_labels=None, comment_length=None, testing=False,
+                 vec=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -19,6 +20,7 @@ class ToxicityCNN(Model):
             embedding_size: int, size of each word vector.
             num_labels: int, number of labels.
             comment_length: int, length of the each comment.
+            vec: list, optional, a numpy array of pre trained word embeddings.
         """
         super(ToxicityCNN, self).__init__(vocab_size=vocab_size,
                                           embedding_size=embedding_size)
@@ -27,11 +29,16 @@ class ToxicityCNN(Model):
         self.comment_length = comment_length
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.testing = testing
+        self.vec = vec
 
         if csvs and batch_size and num_epochs \
                 and num_labels and comment_length:
             self.file_read_op(csvs, batch_size, num_epochs,
                               num_labels, comment_length)
+
+        if self.vec is not None:
+            self.vocab_size = vec.shape[0]
+            self.embedding_size = len(vec[0])
 
     def file_read_op(self, file_names, batch_size,
                      num_epochs, num_labels, comment_length):
@@ -212,9 +219,13 @@ class ToxicityCNN(Model):
     @property_wrap('_embeddings')
     def embeddings(self):
         with tf.variable_scope('embedding'):
+            embedding_initializer = tf.constant_initializer(self.vec) if self.vec is not None\
+                else tf.random_uniform_initializer(-1, 1)
+
             self._embeddings = tf.get_variable(name='embedding_w',
                                                shape=[self.vocab_size, self.embedding_size],
-                                               initializer=tf.random_uniform_initializer(-1, 1))
+                                               initializer=embedding_initializer,
+                                               trainable=self.vec is None)
             embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
 
             mask = tf.concat([tf.ones([1, self.embedding_size]),
