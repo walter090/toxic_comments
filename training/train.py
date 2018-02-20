@@ -5,13 +5,14 @@ import os
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
 
+import preprocess
 from model.toxic_detection import ToxicityCNN
 from model.skip_gram import WordEmbedding
 
 
 def train(model, verbose_freq=200, save_freq=2000,
           meta=None, log_dir=None, model_dir=None,
-          metadata=None, word_vector_meta=None):
+          metadata=None, word_vector_meta=None, word_vector_file=None):
     """Function for training models
 
     Args:
@@ -24,6 +25,9 @@ def train(model, verbose_freq=200, save_freq=2000,
         model_dir: string, directory to save variables.
         metadata: string, path to the metadata that maps IDs to words.
         word_vector_meta: string, path to the saved word vectors.
+        word_vector_file: string, path to the pre trained word vectors. Cannot
+            be used with word_vector_meta; if both arguments are provided,
+            word_vector_meta will be ignored.
 
     Returns:
         None
@@ -32,6 +36,10 @@ def train(model, verbose_freq=200, save_freq=2000,
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
+
+    if word_vector_file:
+        word2id, vec = preprocess.build_vocab_from_file(word_vector_file)
+        model.provide_vector(vec)
 
     model_grads, model_optimization = model.optimize
     model_step = model.global_step
@@ -66,7 +74,7 @@ def train(model, verbose_freq=200, save_freq=2000,
 
         if meta:
             restore_variables(meta, sess)
-        if word_vector_meta:
+        if word_vector_meta and not word_vector_file:
             restore_word_vectors(word_vector_meta, sess)
 
         coord = tf.train.Coordinator()
@@ -147,14 +155,14 @@ def train_cnn(csvs, vocab_size=18895, batch_size=512,
               num_epochs=150, embedding_size=100, num_labels=6,
               comment_length=60, verbose_freq=200, save_freq=2000,
               word_vector_meta=None, meta=None, log_dir=None,
-              model_dir=None, metadata=None):
+              model_dir=None, metadata=None, vector_file=None):
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
                         embedding_size=embedding_size, num_labels=num_labels,
                         comment_length=comment_length)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
-          metadata=metadata, word_vector_meta=word_vector_meta)
+          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
 
 
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
