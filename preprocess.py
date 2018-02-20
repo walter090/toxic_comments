@@ -410,6 +410,7 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
         pad: string, pad word token.
         unknown: string, unknown word token
         limit: int, upper limit of vocab size.
+        skip_header: int, number of header lines to skip.
 
     Returns:
         word2id: dict, string word to id mapping.
@@ -428,7 +429,7 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
                 word2id[word] = index + 2
                 embeddings.append(weights)
 
-                if index + 1 == limit:
+                if index + 1 - skip_header == limit:
                     break
 
     embedding_size = len(embeddings[0])
