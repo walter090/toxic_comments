@@ -402,14 +402,14 @@ def split_data(file_dir, file_name, test_size=0.2):
 
 
 def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
-                          limit=30000):
+                          limit=30000, skip_header=1):
     """ Extract vocabulary and embeddings from pre trained embedding file.
 
     Args:
         vec_file: string, name of embedding file.
         pad: string, pad word token.
         unknown: string, unknown word token
-        limit: int, upper limit of vocab.
+        limit: int, upper limit of vocab size.
 
     Returns:
         word2id: dict, string word to id mapping.
@@ -420,15 +420,16 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
 
     with open(vec_file) as file:
         for index, entry in enumerate(file):
-            values = entry.split()
-            word = values[0]
-            weights = np.asarray(values[1:], dtype=np.float32)
+            if index + 1 > skip_header:
+                values = entry.split()
+                word = values[0]
+                weights = np.asarray(values[1:], dtype=np.float32)
 
-            word2id[word] = index + 2
-            embeddings.append(weights)
+                word2id[word] = index + 2
+                embeddings.append(weights)
 
-            if index + 1 == limit:
-                break
+                if index + 1 == limit:
+                    break
 
     embedding_size = len(embeddings[0])
     # Random for unknown
@@ -436,6 +437,6 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
     # Random for padding, padding will be masked during lookup.
     embeddings.insert(0, np.random.randn(embedding_size))
 
-    embeddings = np.asarray(embeddings, dtype=np.float32)
+    embeddings = np.array(embeddings, dtype=np.object)
 
     return word2id, embeddings
