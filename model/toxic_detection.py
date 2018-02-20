@@ -42,6 +42,11 @@ class ToxicityCNN(Model):
             self.vocab_size = vec.shape[0]
             self.embedding_size = len(vec[0])
 
+    def provide_vector(self, vec):
+        self.vec = vec
+        self.vocab_size = vec.shape[0]
+        self.embedding_size = len(vec[0])
+
     def file_read_op(self, file_names, batch_size,
                      num_epochs, num_labels, comment_length):
         """Read csv files in batch
