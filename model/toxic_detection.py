@@ -21,6 +21,8 @@ class ToxicityCNN(Model):
             num_labels: int, number of labels.
             comment_length: int, length of the each comment.
             vec: list, optional, a numpy array of pre trained word embeddings.
+                embedding_size and vocab_size are ignored if this argument is
+                provided.
         """
         super(ToxicityCNN, self).__init__(vocab_size=vocab_size,
                                           embedding_size=embedding_size)
