@@ -206,6 +206,8 @@ if __name__ == '__main__':
                         help='Path to saved word vector variables')
     parser.add_argument('--meta', dest='meta', type=str,
                         help='Path to saved variables')
+    parser.add_argument('--vector', dest='vector', type=str,
+                        help='Path to pre trained word vectors.')
 
     args = parser.parse_args()
 
@@ -213,7 +215,7 @@ if __name__ == '__main__':
         train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
                   vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                   comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
-                  word_vector_meta=args.word_vector_meta, meta=args.meta)
+                  word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
