@@ -187,7 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--epochs', dest='num_epochs',
                         help='Number of epochs', type=int, default=100)
     parser.add_argument('-v', '--vocab', dest='vocab_size',
-                        help='Vocabulary size', type=int, required=True)
+                        help='Vocabulary size', type=int, required=False)
     parser.add_argument('--embedding', dest='embedding_size',
                         help='Embedding size', type=int, default=100)
     parser.add_argument('-l', '--labels', dest='num_labels',
