@@ -126,22 +126,10 @@ class ToxicityCNN(Model):
                     [2, 1, 256, pool_size(2), 1],
                 ],
                 [
-                    [2, 1, 256, pool_size(2), 1],
-                ],
-                [
-                    [3, 1, 256, pool_size(3), 1],
-                ],
-                [
                     [3, 1, 256, pool_size(3), 1],
                 ],
                 [
                     [4, 1, 256, pool_size(4), 1],
-                ],
-                [
-                    [4, 1, 256, pool_size(4), 1],
-                ],
-                [
-                    [5, 1, 256, pool_size(5), 1],
                 ],
                 [
                     [5, 1, 256, pool_size(5), 1],
