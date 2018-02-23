@@ -136,6 +136,9 @@ class ToxicityCNN(Model):
                 [
                     [5, 1, 256, pool_size(5), 1],
                 ],
+                [
+                    [6, 1, 256, pool_size(6), 1],
+                ],
             ] if not self.layer_config else self.layer_config
 
             fully_conn_config = [
