@@ -423,10 +423,10 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
         for index, entry in enumerate(file):
             if index + 1 > skip_header:
                 values = entry.split()
-                word = values[0].lower()
+                word = values[0]
                 weights = np.asarray(values[1:], dtype=np.float32)
 
-                word2id[word] = index + 2
+                word2id[word] = index + 1
                 embeddings.append(weights)
 
                 if index + 1 - skip_header == limit:
