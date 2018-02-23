@@ -9,7 +9,7 @@ class ToxicityCNN(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None):
+                 vec=None, layer_config=None, fully_conn_config=None):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -32,6 +32,8 @@ class ToxicityCNN(Model):
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.testing = testing
         self.vec = vec
+        self.layer_config = layer_config
+        self.fully_conn_config = fully_conn_config
 
         if csvs and batch_size and num_epochs \
                 and num_labels and comment_length:
@@ -134,12 +136,12 @@ class ToxicityCNN(Model):
                 [
                     [5, 1, 256, pool_size(5), 1],
                 ],
-            ] if not layer_config else layer_config
+            ] if not self.layer_config else self.layer_config
 
             fully_conn_config = [
                 [1024, 'lrelu', 0.5],
                 [512, 'lrelu', 0.5],
-            ] if not fully_conn_config else fully_conn_config
+            ] if not self.fully_conn_config else self.fully_conn_config
 
             outputs = []
 
@@ -181,7 +183,9 @@ class ToxicityCNN(Model):
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self.network(x_input=self.embeddings[1],
-                                        num_output=self.num_labels)
+                                        num_output=self.num_labels,
+                                        layer_config=self.layer_config,
+                                        fully_conn_config=self.fully_conn_config)
         return self._prediction
 
     @property_wrap('_loss')
