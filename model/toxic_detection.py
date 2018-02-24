@@ -125,9 +125,6 @@ class ToxicityCNN(Model):
                 # Convolution layer configuration
                 # ksize, stride, out_channels, pool_ksize, pool_stride
                 [
-                    [2, 1, 256, pool_size(2), 1],
-                ],
-                [
                     [3, 1, 256, pool_size(3), 1],
                 ],
                 [
@@ -135,9 +132,6 @@ class ToxicityCNN(Model):
                 ],
                 [
                     [5, 1, 256, pool_size(5), 1],
-                ],
-                [
-                    [6, 1, 256, pool_size(6), 1],
                 ],
             ] if not self.layer_config else self.layer_config
 
