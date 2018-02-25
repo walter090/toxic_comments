@@ -136,8 +136,8 @@ class ToxicityCNN(Model):
             ] if not self.layer_config else self.layer_config
 
             fully_conn_config = [
-                [1024, 'lrelu', 0.5],
-                [512, 'lrelu', 0.5],
+                [1024, 'lrelu', 0.75],
+                [512, 'lrelu', 0.75],
             ] if not self.fully_conn_config else self.fully_conn_config
 
             outputs = []
