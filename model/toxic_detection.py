@@ -125,7 +125,7 @@ class ToxicityCNN(Model):
                 # Convolution layer configuration
                 # ksize, stride, out_channels, pool_ksize, pool_stride
                 [
-                    [2, 1, 256, pool_size(3), 1],
+                    [2, 1, 256, pool_size(2), 1],
                 ],
                 [
                     [3, 1, 256, pool_size(3), 1],
