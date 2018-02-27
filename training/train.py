@@ -7,6 +7,7 @@ from tensorflow.contrib.tensorboard.plugins import projector
 
 import preprocess
 from model.toxic_detection import ToxicityCNN
+from model.rnn import ToxicityLSTM
 from model.skip_gram import WordEmbedding
 
 
@@ -165,6 +166,20 @@ def train_cnn(csvs, vocab_size=18895, batch_size=512,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
 
 
+def train_lstm(csvs, vocab_size=18895, batch_size=256,
+               num_epochs=100, embedding_size=300, num_labels=6,
+               comment_length=60, verbose_freq=200, save_freq=1000,
+               word_vector_meta=None, meta=None, log_dir=None,
+               model_dir=None, metadata=None, vector_file=None):
+    model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
+                         num_epochs=num_epochs, vocab_size=vocab_size,
+                         embedding_size=embedding_size, num_labels=num_labels,
+                         comment_length=comment_length)
+    train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
+          meta=meta, log_dir=log_dir, model_dir=model_dir,
+          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
+
+
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
                        num_epochs=160, embedding_size=100, verbose_freq=200,
                        save_freq=2000, meta=None, log_dir=None,
@@ -216,6 +231,12 @@ if __name__ == '__main__':
                   vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                   comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                   word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector)
+
+    if args.mode == 'lstm':
+        train_lstm(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
+                   vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
+                   comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
+                   word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
