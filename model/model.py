@@ -116,16 +116,47 @@ class Model:
 
     @property_wrap('_loss')
     def loss(self):
+        logits, output, _ = self.prediction
+        losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.toxicity_batch)
+        loss = tf.reduce_mean(losses)
+
+        self._loss = loss
         return self._loss
 
     @property_wrap('_metric')
     def metric(self):
+        _, auc = tf.metrics.auc(labels=self.toxicity_batch,
+                                predictions=self.prediction[1])
+        self._metric = auc
         return self._metric
 
     @property_wrap('_optimize')
     def optimize(self):
+        self.global_step = tf.Variable(0, trainable=False, name='global_step')
+
+        optimizer = tf.train.AdamOptimizer(1e-4)
+        grads = optimizer.compute_gradients(self.loss)
+
+        self._optimize = grads, optimizer.apply_gradients(grads_and_vars=grads,
+                                                          global_step=self.global_step)
         return self._optimize
 
     @property_wrap('_embeddings')
     def embeddings(self):
-        return self._embeddings
+        with tf.variable_scope('embedding'):
+            embedding_initializer = tf.constant_initializer(self.vec) if self.vec is not None \
+                else tf.random_uniform_initializer(-1, 1)
+
+            self._embeddings = tf.get_variable(name='embedding_w',
+                                               shape=[self.vocab_size, self.embedding_size],
+                                               initializer=embedding_initializer,
+                                               trainable=self.vec is None)
+            embedded = tf.nn.embedding_lookup(self._embeddings, self.comment_batch)
+
+            mask = tf.concat([tf.ones([1, self.embedding_size]),
+                              tf.zeros([1, self.embedding_size]),
+                              tf.ones([self.vocab_size - 1, self.embedding_size])], axis=0)
+            embedded_masked = tf.nn.embedding_lookup(mask, self.comment_batch)
+            self.embedded = tf.multiply(embedded, embedded_masked)
+
+            return self._embeddings, self.embedded
