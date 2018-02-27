@@ -32,10 +32,10 @@ class ToxicityCNN(Model):
         self.layer_config = layer_config
         self.fully_conn_config = fully_conn_config
 
-    def network(self, x_input, num_output,
-                layer_config=None, fully_conn_config=None, pool='max',
-                name='network', padding='VALID', batchnorm=False,
-                reuse_variables=False):
+    def _network(self, x_input, num_output,
+                 layer_config=None, fully_conn_config=None, pool='max',
+                 name='network', padding='VALID', batchnorm=False,
+                 reuse_variables=False):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
         to the config lists. The prediction property calls this function with all its
@@ -127,6 +127,6 @@ class ToxicityCNN(Model):
 
     @property_wrap('_prediction')
     def prediction(self):
-        self._prediction = self.network(x_input=self.embeddings[1], num_output=self.num_labels,
-                                        layer_config=self.layer_config, fully_conn_config=self.fully_conn_config)
+        self._prediction = self._network(x_input=self.embeddings[1], num_output=self.num_labels,
+                                         layer_config=self.layer_config, fully_conn_config=self.fully_conn_config)
         return self._prediction

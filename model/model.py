@@ -33,8 +33,8 @@ class Model:
 
         if csvs and batch_size and num_epochs \
                 and num_labels and comment_length:
-            self.file_read_op(csvs, batch_size, num_epochs,
-                              num_labels, comment_length)
+            self._file_read_op(csvs, batch_size, num_epochs,
+                               num_labels, comment_length)
 
         if self.vec is not None:
             self.vocab_size = vec.shape[0]
@@ -66,9 +66,9 @@ class Model:
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
 
-    def file_read_op(self, file_names, batch_size,
-                     num_epochs, num_labels, comment_length,
-                     *args, **kwargs):
+    def _file_read_op(self, file_names, batch_size,
+                      num_epochs, num_labels, comment_length,
+                      *args, **kwargs):
         """Read csv files in batch
 
         Args:
@@ -106,12 +106,12 @@ class Model:
         )
         self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
 
-    def network(self, *args, **kwargs):
+    def _network(self, *args, **kwargs):
         pass
 
     @property_wrap('_prediction')
     def prediction(self):
-        self._prediction = self.network()
+        self._prediction = self._network()
         return self._prediction
 
     @property_wrap('_loss')

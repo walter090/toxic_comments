@@ -15,11 +15,11 @@ class WordEmbedding(Model):
         self.nce_samples = nce_samples
 
         if csvs and batch_size and num_epochs:
-            self.file_read_op(file_names=csvs, batch_size=batch_size,
-                              num_epochs=num_epochs)
+            self._file_read_op(file_names=csvs, batch_size=batch_size,
+                               num_epochs=num_epochs)
 
-    def file_read_op(self, file_names, batch_size,
-                     num_epochs, num_labels=None, comment_length=None):
+    def _file_read_op(self, file_names, batch_size,
+                      num_epochs, num_labels=None, comment_length=None):
         """Read csv files and create input batches.
 
         Args:
@@ -49,7 +49,7 @@ class WordEmbedding(Model):
             [target, context], batch_size=batch_size,
             capacity=capacity, min_after_dequeue=min_after_dequeue)
 
-    def network(self, input_x, name='nce'):
+    def _network(self, input_x, name='nce'):
         pass
 
     @property_wrap('_prediction')
