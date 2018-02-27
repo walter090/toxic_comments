@@ -24,68 +24,13 @@ class ToxicityCNN(Model):
                 embedding_size and vocab_size are ignored if this argument is
                 provided.
         """
-        super(ToxicityCNN, self).__init__(vocab_size=vocab_size,
-                                          embedding_size=embedding_size)
-
-        self.num_labels = num_labels
-        self.comment_length = comment_length
-        self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
-        self.testing = testing
-        self.vec = vec
+        super(ToxicityCNN, self).__init__(
+            csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
+            vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
+            comment_length=comment_length, testing=testing, vec=vec
+        )
         self.layer_config = layer_config
         self.fully_conn_config = fully_conn_config
-
-        if csvs and batch_size and num_epochs \
-                and num_labels and comment_length:
-            self.file_read_op(csvs, batch_size, num_epochs,
-                              num_labels, comment_length)
-
-        if self.vec is not None:
-            self.vocab_size = vec.shape[0]
-            self.embedding_size = len(vec[0])
-
-    def provide_vector(self, vec):
-        self.vec = vec
-        self.vocab_size = vec.shape[0]
-        self.embedding_size = len(vec[0])
-
-    def file_read_op(self, file_names, batch_size,
-                     num_epochs, num_labels, comment_length):
-        """Read csv files in batch
-
-        Args:
-            file_names: list, list of file names.
-            batch_size: int, batch size.
-            num_epochs: int, number of epochs.
-            num_labels: int, number of labels.
-            comment_length: int, length of each comment.
-
-        Returns:
-            None
-        """
-        self.num_labels = num_labels
-        self.comment_length = comment_length
-
-        reader = tf.TextLineReader(skip_header_lines=1)
-        queue = tf.train.string_input_producer(file_names,
-                                               num_epochs=num_epochs,
-                                               shuffle=True)
-
-        _, value = reader.read(queue)
-
-        record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
-        cols = tf.decode_csv(value, record_defaults=record_defaults)
-        comment_id = cols[0]
-        comment_text = tf.stack(cols[-60:])
-        toxicity = tf.stack(cols[2:8])
-
-        min_after_dequeue = 10000
-        capacity = min_after_dequeue + 4 * batch_size
-        self.comment_batch, self.toxicity_batch, self.id_batch = tf.train.shuffle_batch(
-            [comment_text, toxicity, comment_id], batch_size=batch_size,
-            capacity=capacity, min_after_dequeue=min_after_dequeue
-        )
-        self.toxicity_batch = tf.cast(self.toxicity_batch, dtype=tf.float32)
 
     def network(self, x_input, num_output,
                 layer_config=None, fully_conn_config=None, pool='max',
