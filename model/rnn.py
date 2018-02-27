@@ -37,7 +37,7 @@ class ToxicityLSTM(Model):
             cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers, state_is_tuple=True)
 
             init_state = cell.zero_state(batch_size=batch_size, dtype=tf.float32)
-            sequence_length = tf.cast([len_sequence] * batch_size, dtype=tf.int16)
+            sequence_length = tf.cast([len_sequence] * batch_size, dtype=tf.int32)
 
             outputs, state = tf.nn.dynamic_rnn(cell=cell, inputs=x_input,
                                                sequence_length=sequence_length, initial_state=init_state)
