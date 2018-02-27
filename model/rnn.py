@@ -20,6 +20,9 @@ class ToxicityLSTM(Model):
                 peepholes=False, name='network', num_proj=None,
                 num_layers=2, keep_prob=0.5):
         with tf.variable_scope(name):
+            if self.testing:
+                keep_prob = 1.
+
             weights = tf.get_variable(shape=[state_size, num_classes],
                                       initializer=tf.random_normal_initializer(),
                                       name='weights')
@@ -31,10 +34,10 @@ class ToxicityLSTM(Model):
                                            num_proj=num_proj)
             cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, input_keep_prob=keep_prob,
                                                  output_keep_prob=keep_prob)
-            cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers)
+            cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers, state_is_tuple=True)
 
-            init_state = cell.zero_state(batch_size=self.batch_size, dtype=tf.float32)
-            sequence_length = tf.cast([len_sequence] * self.batch_size, dtype=tf.int16)
+            init_state = cell.zero_state(batch_size=batch_size, dtype=tf.float32)
+            sequence_length = tf.cast([len_sequence] * batch_size, dtype=tf.int16)
 
             outputs, state = tf.nn.dynamic_rnn(cell=cell, inputs=x_input,
                                                sequence_length=sequence_length, initial_state=init_state)
@@ -55,5 +58,5 @@ class ToxicityLSTM(Model):
     def prediction(self):
         self._prediction = self.network(x_input=self.embeddings[1], len_sequence=self.comment_length,
                                         batch_size=self.batch_size, num_classes=self.num_labels,
-                                        state_size=256)
+                                        state_size=self.embedding_size, keep_prob=0.5)
         return self._prediction
