@@ -11,8 +11,8 @@ To train with default layer configurations
 python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode cnn
 ```
 where vocab flag is for specifying vocabulary size and embedding embedding 
-size. There are three modes for training: use 'cnn' for training CNN for 
-classification, 'emb' for training word embeddings, and 'test' for testing
+size. There are three modes: use 'cnn' for training CNN for 
+classification, 'lstm' for training LSTM for classification, 'emb' for training word embeddings, and 'test' for testing
 a trained model.
 
 You can also change the layer configuration if you decide to write your 
