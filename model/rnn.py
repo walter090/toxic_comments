@@ -55,7 +55,7 @@ class ToxicityLSTM(Model):
             condition = tf.less(threshold, output)
             prediction = tf.where(condition, tf.ones_like(output), tf.zeros_like(output))
 
-            return logits, condition, prediction
+            return logits, output, prediction
 
     @property_wrap('_prediction')
     def prediction(self):
