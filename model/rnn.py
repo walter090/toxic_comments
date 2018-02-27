@@ -15,10 +15,10 @@ class ToxicityLSTM(Model):
             comment_length=comment_length, testing=testing, vec=vec
         )
 
-    def network(self, x_input, len_sequence,
-                batch_size, num_classes, state_size,
-                peepholes=False, name='network', num_proj=None,
-                num_layers=2, keep_prob=0.5):
+    def _network(self, x_input, len_sequence,
+                 batch_size, num_classes, state_size,
+                 peepholes=False, name='network', num_proj=None,
+                 num_layers=2, keep_prob=0.5):
         with tf.variable_scope(name):
             if self.testing:
                 keep_prob = 1.
@@ -43,6 +43,9 @@ class ToxicityLSTM(Model):
                                                sequence_length=sequence_length, initial_state=init_state)
             outputs = tf.reshape(outputs, [-1, state_size])
 
+            last = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
+            outputs = tf.gather(outputs, last)
+
             logits = tf.matmul(outputs, weights)
             logits = tf.nn.bias_add(logits, bias=bias)
 
@@ -56,7 +59,7 @@ class ToxicityLSTM(Model):
 
     @property_wrap('_prediction')
     def prediction(self):
-        self._prediction = self.network(x_input=self.embeddings[1], len_sequence=self.comment_length,
-                                        batch_size=self.batch_size, num_classes=self.num_labels,
-                                        state_size=self.embedding_size, keep_prob=0.5)
+        self._prediction = self._network(x_input=self.embeddings[1], len_sequence=self.comment_length,
+                                         batch_size=self.batch_size, num_classes=self.num_labels,
+                                         state_size=self.embedding_size, keep_prob=0.5)
         return self._prediction
