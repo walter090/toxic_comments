@@ -23,6 +23,7 @@ class Model:
         self.embedding_size = embedding_size
         self.global_step = None
         self.vocab_size = vocab_size
+        self.batch_size = batch_size
 
         self._embeddings = None
         self._loss = None
@@ -82,6 +83,7 @@ class Model:
         """
         self.num_labels = num_labels
         self.comment_length = comment_length
+        self.batch_size = batch_size
 
         reader = tf.TextLineReader(skip_header_lines=1)
         queue = tf.train.string_input_producer(file_names,
