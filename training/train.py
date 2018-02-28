@@ -232,8 +232,8 @@ if __name__ == '__main__':
                         help='Path to saved variables')
     parser.add_argument('--vector', dest='vector', type=str,
                         help='Path to pre trained word vectors.')
-    parser.add_argument('--peepholes', dest='peepholes', type=str,
-                        action='store_true', help='Use peephole connections in LSTM')
+    parser.add_argument('--peepholes', dest='peepholes', action='store_true',
+                        help='Use peephole connections in LSTM')
 
     args = parser.parse_args()
 
