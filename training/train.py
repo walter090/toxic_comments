@@ -144,11 +144,19 @@ def restore_word_vectors(meta, sess):
     saver.restore(sess=sess, save_path=meta)
 
 
-def test_model(csvs, meta, vocab, batch_size=516,
-               num_epochs=1, embedding_size=300):
+def test_cnn(csvs, meta, vocab, batch_size=516,
+             num_epochs=1, embedding_size=300):
     model = ToxicityCNN(csvs=csvs, vocab_size=vocab, batch_size=batch_size,
                         num_epochs=num_epochs, embedding_size=embedding_size, num_labels=6,
                         comment_length=60, testing=True)
+    test(model, meta=meta)
+
+
+def test_lstm(csvs, meta, vocab, batch_size=4096,
+              num_epochs=1, embedding_size=300):
+    model = ToxicityLSTM(csvs=csvs, vocab_size=vocab, batch_size=batch_size,
+                         num_epochs=num_epochs, embedding_size=embedding_size, num_labels=6,
+                         comment_length=60, testing=True)
     test(model, meta=meta)
 
 
@@ -245,6 +253,11 @@ if __name__ == '__main__':
                            metadata=args.metadata, nce_samples=args.nce_samples)
 
     if args.mode == 'test':
-        test_model(csvs=args.csvs, meta=args.meta, batch_size=args.batch_size,
-                   num_epochs=args.num_epochs, embedding_size=args.embedding_size,
-                   vocab=args.vocab_size)
+        test_cnn(csvs=args.csvs, meta=args.meta, batch_size=args.batch_size,
+                 num_epochs=args.num_epochs, embedding_size=args.embedding_size,
+                 vocab=args.vocab_size)
+
+    if args.mode == 'testlstm':
+        test_lstm(csvs=args.csvs, meta=args.meta, batch_size=args.batch_size,
+                  num_epochs=args.num_epochs, embedding_size=args.embedding_size,
+                  vocab=args.vocab_size)
