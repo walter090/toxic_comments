@@ -8,12 +8,13 @@ class ToxicityLSTM(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None):
+                 vec=None, peepholes=False):
         super().__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
             comment_length=comment_length, testing=testing, vec=vec
         )
+        self.peepholes = peepholes
 
     def _network(self, x_input, len_sequence,
                  batch_size, num_classes, state_size,
@@ -61,5 +62,6 @@ class ToxicityLSTM(Model):
     def prediction(self):
         self._prediction = self._network(x_input=self.embeddings[1], len_sequence=self.comment_length,
                                          batch_size=self.batch_size, num_classes=self.num_labels,
-                                         state_size=self.embedding_size, keep_prob=0.5)
+                                         state_size=self.embedding_size, keep_prob=0.5,
+                                         peepholes=self.peepholes)
         return self._prediction
