@@ -178,11 +178,12 @@ def train_lstm(csvs, vocab_size=18895, batch_size=256,
                num_epochs=100, embedding_size=300, num_labels=6,
                comment_length=60, verbose_freq=200, save_freq=1000,
                word_vector_meta=None, meta=None, log_dir=None,
-               model_dir=None, metadata=None, vector_file=None):
+               model_dir=None, metadata=None, vector_file=None,
+               peepholes=False):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
                          num_epochs=num_epochs, vocab_size=vocab_size,
                          embedding_size=embedding_size, num_labels=num_labels,
-                         comment_length=comment_length)
+                         comment_length=comment_length, peepholes=peepholes)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
@@ -231,6 +232,8 @@ if __name__ == '__main__':
                         help='Path to saved variables')
     parser.add_argument('--vector', dest='vector', type=str,
                         help='Path to pre trained word vectors.')
+    parser.add_argument('--peepholes', dest='peepholes', type=str,
+                        action='store_true', help='Use peephole connections in LSTM')
 
     args = parser.parse_args()
 
@@ -244,7 +247,8 @@ if __name__ == '__main__':
         train_lstm(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
                    vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
-                   word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector)
+                   word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
+                   peepholes=args.peepholes)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
