@@ -221,7 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--sfreq', dest='save_freq',
                         help='Save frequency', type=int, default=1000)
     parser.add_argument('-m', '--mode', dest='mode',
-                        help='Training mode', type=str, default='emb')
+                        help='Training mode', type=str, required=True)
     parser.add_argument('--metadata', dest='metadata', type=str,
                         help='Projector metadata file path')
     parser.add_argument('--samples', dest='nce_samples', default=64,
