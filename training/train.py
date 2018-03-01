@@ -179,11 +179,12 @@ def train_lstm(csvs, vocab_size=18895, batch_size=256,
                comment_length=60, verbose_freq=200, save_freq=1000,
                word_vector_meta=None, meta=None, log_dir=None,
                model_dir=None, metadata=None, vector_file=None,
-               peepholes=False):
+               peepholes=False, bi=True):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
                          num_epochs=num_epochs, vocab_size=vocab_size,
                          embedding_size=embedding_size, num_labels=num_labels,
-                         comment_length=comment_length, peepholes=peepholes)
+                         comment_length=comment_length, peepholes=peepholes,
+                         bi=bi)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
@@ -234,6 +235,8 @@ if __name__ == '__main__':
                         help='Path to pre trained word vectors.')
     parser.add_argument('--peepholes', dest='peepholes', action='store_true',
                         help='Use peephole connections in LSTM')
+    parser.add_argument('--bi', dest='bi', action='store_true',
+                        help='Use birnn')
 
     args = parser.parse_args()
 
@@ -248,7 +251,7 @@ if __name__ == '__main__':
                    vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                    word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
-                   peepholes=args.peepholes)
+                   peepholes=args.peepholes, bi=args.bi)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
