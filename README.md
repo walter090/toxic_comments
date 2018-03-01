@@ -15,6 +15,11 @@ size. There are three modes: use 'cnn' for training CNN for
 classification, 'lstm' for training LSTM for classification, 'emb' for training word embeddings, and 'test' for testing
 a trained model.
 
+To train with a pre trained word vector file, use the 'vector' flag:
+```bash
+python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode lstm --vector fasttext.vec
+```
+
 You can also change the layer configuration if you decide to write your 
 own code for training and testing, by providing values to `layer_config` 
 and `fully_conn_config` attributes to the ToxicityCNN object. `layer_config` 
