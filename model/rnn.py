@@ -9,7 +9,7 @@ class ToxicityLSTM(Model):
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
                  vec=None, peepholes=False, bi=True,
-                 keep_prob=0.5):
+                 keep_prob=0.5, num_layers=None):
         super().__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
@@ -18,6 +18,7 @@ class ToxicityLSTM(Model):
         )
         self.peepholes = peepholes
         self.bi = bi
+        self.num_layers = num_layers
 
     @staticmethod
     def _create_cell(num_layers, state_size, keep_prob, peepholes):
@@ -149,5 +150,5 @@ class ToxicityLSTM(Model):
         self._prediction = self._network(x_input=self.embeddings[1], len_sequence=self.comment_length,
                                          batch_size=self.batch_size, num_classes=self.num_labels,
                                          state_size=self.embedding_size, keep_prob=self.keep_prob,
-                                         peepholes=self.peepholes, bi=self.bi)
+                                         peepholes=self.peepholes, bi=self.bi, num_layers=self.num_layers)
         return self._prediction
