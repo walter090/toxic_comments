@@ -83,7 +83,9 @@ class ToxicityLSTM(Model):
             bi: bool, set True to use BiRNN.
 
         Returns:
-
+            logits: logit output from network.
+            output: activated logits.
+            prediction: prediction from network.
         """
         with tf.variable_scope(name):
             if self.testing:
