@@ -19,7 +19,8 @@ To train with a pre trained word vector file, use the 'vector' flag:
 ```bash
 python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode lstm --vector fasttext.vec
 ```
-
+You can also optionally add a tsv metadata file for TensorBoard projector using the `metadata` flag.
+### Custom CNN layers
 You can also change the layer configuration if you decide to write your 
 own code for training and testing, by providing values to `layer_config` 
 and `fully_conn_config` attributes to the ToxicityCNN object. `layer_config` 
