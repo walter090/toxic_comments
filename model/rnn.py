@@ -50,14 +50,14 @@ class ToxicityLSTM(Model):
 
             sequence_length = tf.cast([len_sequence] * batch_size, dtype=tf.int32)
 
-            weights = tf.get_variable(shape=[state_size, num_classes],
-                                      initializer=tf.random_normal_initializer(),
-                                      name='weights')
-            bias = tf.get_variable(shape=[num_classes],
-                                   initializer=tf.zeros_initializer(),
-                                   name='bias')
-
             if bi:
+                weights = tf.get_variable(shape=[state_size * 2, num_classes],
+                                          initializer=tf.random_normal_initializer(),
+                                          name='weights')
+                bias = tf.get_variable(shape=[num_classes],
+                                       initializer=tf.zeros_initializer(),
+                                       name='bias')
+
                 cell_fw = self._create_cell(num_layers=num_layers, state_size=state_size,
                                             keep_prob=keep_prob, peepholes=peepholes)
                 cell_bw = self._create_cell(num_layers=num_layers, state_size=state_size,
@@ -67,7 +67,16 @@ class ToxicityLSTM(Model):
                 outputs = self._create_birnn(cell_fw=cell_fw, cell_bw=cell_bw,
                                              init_state_fw=init_state_fw, init_state_bw=init_state_bw,
                                              sequence_length=sequence_length, inputs=x_input)
+
+                outputs = tf.reshape(outputs, [-1, state_size * 2])
             else:
+                weights = tf.get_variable(shape=[state_size, num_classes],
+                                          initializer=tf.random_normal_initializer(),
+                                          name='weights')
+                bias = tf.get_variable(shape=[num_classes],
+                                       initializer=tf.zeros_initializer(),
+                                       name='bias')
+
                 cell = self._create_cell(num_layers=num_layers, state_size=state_size,
                                          keep_prob=keep_prob, peepholes=peepholes)
 
@@ -76,7 +85,7 @@ class ToxicityLSTM(Model):
                 outputs, _ = tf.nn.dynamic_rnn(cell=cell, inputs=x_input,
                                                sequence_length=sequence_length, initial_state=init_state)
 
-            outputs = tf.reshape(outputs, [-1, state_size])
+                outputs = tf.reshape(outputs, [-1, state_size])
 
             last = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
             outputs = tf.gather(outputs, last)
