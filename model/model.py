@@ -7,7 +7,7 @@ class Model:
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None):
+                 vec=None, keep_prob=0.5):
         """
         Args:
             vocab_size: int, vocabulary size for the word embeddings.
@@ -18,6 +18,7 @@ class Model:
         self.comment_batch, self.toxicity_batch, self.id_batch = None, None, None
         self.testing = testing
         self.vec = vec
+        self.keep_prob = keep_prob
 
         self.embedded = None
         self.embedding_size = embedding_size

@@ -9,7 +9,8 @@ class ToxicityCNN(Model):
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None, layer_config=None, fully_conn_config=None):
+                 vec=None, layer_config=None, fully_conn_config=None,
+                 keep_prob=0.5):
         """
         Args:
             csvs: list, a list of strings that are names of csv files to be used
@@ -27,7 +28,8 @@ class ToxicityCNN(Model):
         super(ToxicityCNN, self).__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
-            comment_length=comment_length, testing=testing, vec=vec
+            comment_length=comment_length, testing=testing, vec=vec,
+            keep_prob=keep_prob
         )
         self.layer_config = layer_config
         self.fully_conn_config = fully_conn_config
@@ -35,7 +37,7 @@ class ToxicityCNN(Model):
     def _network(self, x_input, num_output,
                  layer_config=None, fully_conn_config=None, pool='max',
                  name='network', padding='VALID', batchnorm=False,
-                 reuse_variables=False):
+                 reuse_variables=False, keep_prob=0.5):
         """This is where the neural net is implemented. Each of the config is a list,
         each element for one layer. Inception is available by adding more dimensions
         to the config lists. The prediction property calls this function with all its
@@ -84,8 +86,8 @@ class ToxicityCNN(Model):
             ] if not self.layer_config else self.layer_config
 
             fully_conn_config = [
-                [1024, 'lrelu', 0.75],
-                [512, 'lrelu', 0.75],
+                [1024, 'lrelu', keep_prob],
+                [512, 'lrelu', keep_prob],
             ] if not self.fully_conn_config else self.fully_conn_config
 
             outputs = []
@@ -128,5 +130,6 @@ class ToxicityCNN(Model):
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self._network(x_input=self.embeddings[1], num_output=self.num_labels,
-                                         layer_config=self.layer_config, fully_conn_config=self.fully_conn_config)
+                                         layer_config=self.layer_config, fully_conn_config=self.fully_conn_config,
+                                         keep_prob=self.keep_prob)
         return self._prediction
