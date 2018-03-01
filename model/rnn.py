@@ -21,6 +21,17 @@ class ToxicityLSTM(Model):
 
     @staticmethod
     def _create_cell(num_layers, state_size, keep_prob, peepholes):
+        """Function for creating a lstm cell.
+
+        Args:
+            num_layers: int, number of stacked lstm layers.
+            state_size: int, size of state.
+            keep_prob: float, keep probability for dropout.
+            peepholes: bool, set True to use peephole connections.
+
+        Returns:
+            Tensor, lstm cell.
+        """
         cell = tf.nn.rnn_cell.LSTMCell(num_units=state_size, use_peepholes=peepholes)
         cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, state_keep_prob=keep_prob,
                                              output_keep_prob=keep_prob)
@@ -32,6 +43,19 @@ class ToxicityLSTM(Model):
     @staticmethod
     def _create_birnn(cell_fw, cell_bw, init_state_fw,
                       init_state_bw, sequence_length, inputs):
+        """Create a bidirectional RNN
+
+        Args:
+            cell_fw: Forward cell.
+            cell_bw: Backward cell.
+            init_state_fw: Forward initial state.
+            init_state_bw: Backward initial state.
+            sequence_length: Tensor, sequence length.
+            inputs: Tensor, input to network.
+
+        Returns:
+            Tensor, concatenated outputs from the network.
+        """
         outputs, _ = tf.nn.bidirectional_dynamic_rnn(
             cell_fw=cell_fw, cell_bw=cell_bw,
             initial_state_fw=init_state_fw, initial_state_bw=init_state_bw,
@@ -44,6 +68,23 @@ class ToxicityLSTM(Model):
                  batch_size, num_classes, state_size,
                  peepholes=False, name='network', num_layers=2,
                  keep_prob=0.5, bi=True):
+        """Build network
+
+        Args:
+            x_input: Tensor, input to network.
+            len_sequence: int, length of each sequence.
+            batch_size: int, size of each mini-batch.
+            num_classes: int, number of labels.
+            state_size: int, size of hidden state.
+            peepholes: bool, set True to use peephole connections.
+            name: str, name for the variable scope.
+            num_layers: int, number of layer for stacked lstm.
+            keep_prob: float, keep probability for dropout.
+            bi: bool, set True to use BiRNN.
+
+        Returns:
+
+        """
         with tf.variable_scope(name):
             if self.testing:
                 keep_prob = 1.
