@@ -22,7 +22,7 @@ class ToxicityLSTM(Model):
     @staticmethod
     def _create_cell(num_layers, state_size, keep_prob, peepholes):
         cell = tf.nn.rnn_cell.LSTMCell(num_units=state_size, use_peepholes=peepholes)
-        cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, input_keep_prob=keep_prob,
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, state_keep_prob=keep_prob,
                                              output_keep_prob=keep_prob)
         if num_layers > 1:
             cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers, state_is_tuple=True)
