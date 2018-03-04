@@ -131,8 +131,8 @@ class ToxicityLSTM(Model):
 
                 outputs = tf.reshape(outputs, [-1, state_size])
 
-            last = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
-            outputs = tf.gather(outputs, last)
+            last_indices = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
+            outputs = tf.gather(outputs, last_indices)
 
             logits = tf.matmul(outputs, weights)
             logits = tf.nn.bias_add(logits, bias=bias)
