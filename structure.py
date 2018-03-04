@@ -186,3 +186,25 @@ def batch_normalize(x, epsilon=1e-5):
                                                variance=variance, offset=offset,
                                                scale=scale, variance_epsilon=epsilon)
         return normalized
+
+
+def attention_weights(target_hidden, source_hidden, name='attention_score'):
+    """Function for computing attention score.
+
+    Args:
+        target_hidden: Tensor, target hidden state.
+        source_hidden: Tensor, source hidden state.
+        name: str, name for variable scope.
+
+    Returns:
+        attention: Tensor, computed Luong attention weights.
+    """
+    with tf.variable_scope(name):
+        weights = tf.get_variable(name='weights',
+                                  shape=target_hidden.get_shape(),
+                                  initializer=tf.truncated_normal_initializer())
+        weighted_hidden = tf.multiply(weights, source_hidden)
+        score = tf.matmul(tf.transpose(target_hidden), weighted_hidden)
+        attention = tf.nn.softmax(score)
+
+        return attention
