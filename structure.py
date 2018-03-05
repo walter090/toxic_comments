@@ -188,7 +188,7 @@ def batch_normalize(x, epsilon=1e-5):
         return normalized
 
 
-def attention_weights(source_hidden, target_hidden=None, name='attention_score'):
+def weigh_attention(source_hidden, target_hidden=None, name='attention_score'):
     """Function for computing attention score.
 
     Args:
@@ -200,17 +200,22 @@ def attention_weights(source_hidden, target_hidden=None, name='attention_score')
         attention: Tensor, computed Luong attention weights.
     """
     with tf.variable_scope(name):
-        if source_hidden is None:
-            source_hidden = tf.get_variable(name='source_hidden',
-                                            shape=target_hidden.get_shape(),
+        if target_hidden is None:
+            target_hidden = tf.get_variable(name='target_hidden',
+                                            shape=[1, source_hidden.get_shape().as_list()[-1]],
                                             initializer=tf.random_normal_initializer())
 
         weights = tf.get_variable(name='weights',
-                                  shape=target_hidden.get_shape(),
+                                  shape=[source_hidden.get_shape().as_list()[-2],
+                                         source_hidden.get_shape().as_list()[-1]],
                                   initializer=tf.truncated_normal_initializer())
 
-        weighted_hidden = tf.multiply(weights, source_hidden)
-        score = tf.matmul(tf.transpose(target_hidden), weighted_hidden)
+        weighed_hidden = tf.multiply(weights, source_hidden)
+        weighed_hidden = tf.reshape(weighed_hidden, shape=[-1, target_hidden.get_shape().as_list()[-1]])
+
+        score = tf.matmul(weighed_hidden, target_hidden, transpose_b=True)
+        score = tf.reshape(score, shape=[-1, source_hidden.get_shape().as_list()[-2]])
+
         attention = tf.nn.softmax(score)
 
         return attention
