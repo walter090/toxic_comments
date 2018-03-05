@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+import structure
 from structure import property_wrap
 from .model import Model
 
@@ -9,7 +10,7 @@ class ToxicityLSTM(Model):
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
                  vec=None, peepholes=False, bi=True,
-                 keep_prob=0.5, num_layers=None):
+                 keep_prob=0.5, num_layers=None, attention=False):
         super().__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
@@ -19,6 +20,7 @@ class ToxicityLSTM(Model):
         self.peepholes = peepholes
         self.bi = bi
         self.num_layers = num_layers
+        self.attention = attention
 
     @staticmethod
     def _create_cell(num_layers, state_size, keep_prob, peepholes):
@@ -132,9 +134,16 @@ class ToxicityLSTM(Model):
                 outputs = tf.reshape(outputs, [-1, state_size])
 
             last_indices = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
-            outputs = tf.gather(outputs, last_indices)
+            last_hidden = tf.gather(outputs, last_indices)
 
-            logits = tf.matmul(outputs, weights)
+            if self.attention:
+                attention_weights = structure.weigh_attention(outputs)
+                attention_weights = tf.expand_dims(attention_weights, 1)
+
+                last_hidden = structure.get_context_vector(source_hidden=outputs,
+                                                           attention_weights=attention_weights)
+
+            logits = tf.matmul(last_hidden, weights)
             logits = tf.nn.bias_add(logits, bias=bias)
 
             output = tf.nn.sigmoid(logits)
