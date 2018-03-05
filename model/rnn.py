@@ -137,7 +137,8 @@ class ToxicityLSTM(Model):
             last_hidden = tf.gather(outputs, last_indices)
 
             if self.attention:
-                attention_weights = structure.weigh_attention(outputs)
+                outputs_in_batch = tf.reshape(outputs, shape=[batch_size, -1, state_size])
+                attention_weights = structure.weigh_attention(outputs_in_batch)
                 last_hidden = structure.get_context_vector(source_hidden=outputs,
                                                            attention_weights=attention_weights)
 
