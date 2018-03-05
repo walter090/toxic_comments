@@ -154,11 +154,12 @@ def test_cnn(csvs, meta, vocab, batch_size=516,
 
 def test_lstm(csvs, meta, vocab,
               peepholes, bi, batch_size=4096,
-              num_epochs=1, embedding_size=300, num_layers=2):
+              num_epochs=1, embedding_size=300, num_layers=2,
+              attention=False):
     model = ToxicityLSTM(csvs=csvs, vocab_size=vocab, batch_size=batch_size,
                          num_epochs=num_epochs, embedding_size=embedding_size, num_labels=6,
                          comment_length=60, testing=True, peepholes=peepholes,
-                         bi=bi, num_layers=num_layers)
+                         bi=bi, num_layers=num_layers, attention=attention)
     test(model, meta=meta)
 
 
@@ -181,12 +182,12 @@ def train_lstm(csvs, vocab_size=18895, batch_size=256,
                comment_length=60, verbose_freq=200, save_freq=1000,
                word_vector_meta=None, meta=None, log_dir=None,
                model_dir=None, metadata=None, vector_file=None,
-               peepholes=False, bi=True, num_layers=2):
+               peepholes=False, bi=True, num_layers=2, attention=False):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
                          num_epochs=num_epochs, vocab_size=vocab_size,
                          embedding_size=embedding_size, num_labels=num_labels,
                          comment_length=comment_length, peepholes=peepholes,
-                         bi=bi, num_layers=num_layers)
+                         bi=bi, num_layers=num_layers, attention=attention)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
@@ -241,6 +242,8 @@ if __name__ == '__main__':
                         help='Use birnn')
     parser.add_argument('--stack', dest='num_layers', type=int,
                         help='Number of layers in lstm cell', default=2)
+    parser.add_argument('--att', dest='attention', action='store_true',
+                        help='Use attention model')
 
     args = parser.parse_args()
 
@@ -255,7 +258,8 @@ if __name__ == '__main__':
                    vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                    word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
-                   peepholes=args.peepholes, bi=args.bi, num_layers=args.num_layers)
+                   peepholes=args.peepholes, bi=args.bi, num_layers=args.num_layers,
+                   attention=args.attention)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
@@ -272,4 +276,4 @@ if __name__ == '__main__':
         test_lstm(csvs=args.csvs, meta=args.meta, batch_size=args.batch_size,
                   num_epochs=args.num_epochs, embedding_size=args.embedding_size,
                   vocab=args.vocab_size, peepholes=args.peepholes, bi=args.bi,
-                  num_layers=args.num_layers)
+                  num_layers=args.num_layers, attention=args.attention)
