@@ -133,15 +133,13 @@ class ToxicityLSTM(Model):
 
                 outputs = tf.reshape(outputs, [-1, state_size])
 
-            if self.attention:
-                attention_weights = structure.weigh_attention(outputs)
-                attention_weights = tf.expand_dims(attention_weights, 1)
-
-                outputs = structure.get_context_vector(source_hidden=outputs,
-                                                       attention_weights=attention_weights)
-
             last_indices = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
             last_hidden = tf.gather(outputs, last_indices)
+
+            if self.attention:
+                attention_weights = structure.weigh_attention(outputs)
+                last_hidden = structure.get_context_vector(source_hidden=outputs,
+                                                           attention_weights=attention_weights)
 
             logits = tf.matmul(last_hidden, weights)
             logits = tf.nn.bias_add(logits, bias=bias)
