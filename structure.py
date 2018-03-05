@@ -202,7 +202,7 @@ def weigh_attention(source_hidden, target_hidden=None, name='attention_score'):
     with tf.variable_scope(name):
         if target_hidden is None:
             target_hidden = tf.get_variable(name='target_hidden',
-                                            shape=[1, source_hidden.get_shape().as_list()[-1]],
+                                            shape=[source_hidden.get_shape().as_list()[-1]],
                                             initializer=tf.random_normal_initializer())
 
         weights = tf.get_variable(name='weights',
@@ -211,7 +211,9 @@ def weigh_attention(source_hidden, target_hidden=None, name='attention_score'):
                                   initializer=tf.truncated_normal_initializer())
 
         weighed_hidden = tf.multiply(weights, source_hidden)
+        # Reshape for broadcasting
         weighed_hidden = tf.reshape(weighed_hidden, shape=[-1, target_hidden.get_shape().as_list()[-1]])
+        target_hidden = tf.reshape(target_hidden, shape=[-1, target_hidden.get_shape().as_list()[-1]])
 
         score = tf.matmul(weighed_hidden, target_hidden, transpose_b=True)
         score = tf.reshape(score, shape=[-1, source_hidden.get_shape().as_list()[-2]])
@@ -219,3 +221,20 @@ def weigh_attention(source_hidden, target_hidden=None, name='attention_score'):
         attention = tf.nn.softmax(score)
 
         return attention
+
+
+def get_context_vector(source_hidden, attention_weights):
+    """Compute the context vector give source hidden state and attention
+    weights.
+
+    Args:
+        source_hidden: Tensor, source hidden state.
+        attention_weights: Tensor, attention weights.
+
+    Returns:
+
+    """
+    attention_weights = tf.expand_dims(attention_weights, -1)
+    context_vector = tf.reduce_sum(tf.multiply(attention_weights, source_hidden),
+                                   axis=1)
+    return context_vector
