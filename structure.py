@@ -237,4 +237,6 @@ def get_context_vector(source_hidden, attention_weights):
     attention_weights = tf.expand_dims(attention_weights, -1)
     context_vector = tf.reduce_sum(tf.multiply(attention_weights, source_hidden),
                                    axis=1)
+    context_vector = tf.reshape(context_vector,
+                                shape=[-1, source_hidden.get_shape().as_list()[-1]])
     return context_vector
