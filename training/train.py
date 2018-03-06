@@ -106,7 +106,6 @@ def train(model, verbose_freq=200, save_freq=2000,
 
 
 def test(model, meta, verbose_freq=20):
-    model_loss = model.loss
     model_auc = model.metric
 
     init_op = tf.group(tf.global_variables_initializer(),
@@ -121,9 +120,9 @@ def test(model, meta, verbose_freq=20):
         try:
             step = 0
             while not coord.should_stop():
-                loss, auc = sess.run([model_loss, model_auc])
+                auc = sess.run(model_auc)
                 if step % verbose_freq == 0:
-                    print('At step {}: loss {}, AUC {}'.format(step, loss, auc))
+                    print('At step {}: AUC {}'.format(step, auc))
                 step += 1
         except tf.errors.OutOfRangeError:
             print('Done testing.')
