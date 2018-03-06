@@ -19,7 +19,8 @@ class WordEmbedding(Model):
                                num_epochs=num_epochs)
 
     def _file_read_op(self, file_names, batch_size,
-                      num_epochs, num_labels=None, comment_length=None):
+                      num_epochs, num_labels=None, comment_length=None,
+                      *args, **kwargs):
         """Read csv files and create input batches.
 
         Args:

@@ -68,7 +68,7 @@ class Model:
         self.embedding_size = embedding_size
 
     def _file_read_op(self, file_names, batch_size,
-                      num_epochs, num_labels, comment_length,
+                      num_epochs, num_labels=None, comment_length=None,
                       *args, **kwargs):
         """Read csv files in batch
 
