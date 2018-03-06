@@ -136,8 +136,8 @@ class ToxicityLSTM(Model):
             last_indices = tf.range(0, batch_size) * len_sequence + (sequence_length - 1)
             last_hidden = tf.gather(outputs, last_indices)
 
-            if self.attention and not bi:
-                outputs_in_batch = tf.reshape(outputs, shape=[batch_size, -1, state_size])
+            if self.attention:
+                outputs_in_batch = tf.reshape(outputs, shape=[batch_size, -1, state_size * 2 if bi else state_size])
                 attention_weights = structure.weigh_attention(outputs_in_batch)
                 last_hidden = structure.get_context_vector(source_hidden=outputs_in_batch,
                                                            attention_weights=attention_weights)
