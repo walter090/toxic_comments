@@ -69,7 +69,7 @@ class Model:
 
     def _file_read_op(self, file_names, batch_size,
                       num_epochs, num_labels=None, comment_length=None,
-                      *args, **kwargs):
+                      record_defaults=None, *args, **kwargs):
         """Read csv files in batch
 
         Args:
@@ -93,7 +93,8 @@ class Model:
 
         _, value = reader.read(queue)
 
-        record_defaults = [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
+        record_defaults = record_defaults if record_defaults\
+            else [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
         cols = tf.decode_csv(value, record_defaults=record_defaults)
         comment_id = cols[0]
         comment_text = tf.stack(cols[-60:])
