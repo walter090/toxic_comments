@@ -110,6 +110,9 @@ class Model:
     def _network(self, *args, **kwargs):
         pass
 
+    def predict(self, data, *args, **kwargs):
+        pass
+
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self._network()
