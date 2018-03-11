@@ -111,7 +111,7 @@ class Model:
     def _network(self, *args, **kwargs):
         pass
 
-    def predict(self, data, *args, **kwargs):
+    def predict(self, x_input, *args, **kwargs):
         pass
 
     @property_wrap('_prediction')
