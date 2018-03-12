@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 from structure import property_wrap
@@ -126,7 +127,7 @@ class Model:
                 numeric id.
 
         Returns:
-            tensor_str_input: tensor, processed string ready for prediction.
+            translated_str_input: ndarray, processed string ready for prediction.
         """
         # Pad/crop the string
         if len(str_input) > self.comment_length:
@@ -142,10 +143,9 @@ class Model:
                 translated_entry = word2id[unk_word]
             translated_str_input.append(translated_entry)
 
-        tensor_str_input = tf.convert_to_tensor(translated_str_input)
-        tensor_str_input = tf.expand_dims(tensor_str_input, axis=0)
+        translated_str_input = np.expand_dims(translated_str_input, axis=0)
 
-        return tensor_str_input
+        return translated_str_input
 
     @property_wrap('_prediction')
     def prediction(self):
