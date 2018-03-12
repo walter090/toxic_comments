@@ -402,7 +402,7 @@ def split_data(file_dir, file_name, test_size=0.2):
 
 
 def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
-                          limit=30000, skip_header=1):
+                          limit=30000, skip_header=1, save_dict=True):
     """ Extract vocabulary and embeddings from pre trained embedding file.
 
     Args:
@@ -411,6 +411,7 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
         unknown: string, unknown word token
         limit: int, upper limit of vocab size.
         skip_header: int, number of header lines to skip.
+        save_dict: bool, set True to save word to id look up table as tsv file.
 
     Returns:
         word2id: dict, string word to id mapping.
@@ -439,5 +440,14 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
     embeddings.insert(0, np.random.randn(embedding_size))
 
     embeddings = np.array(embeddings, dtype=np.object)
+
+    if save_dict:
+        if not os.path.exists('metadata'):
+            os.makedirs('metadata')
+
+        with open(os.path.join('metadata', 'word2id.tsv'), 'w') as meta_saver:
+            meta_saver.write('Word\tid_\n')
+            for word, id_ in word2id.items():
+                meta_saver.write('{}\t{}\n'.format(word, id_))
 
     return word2id, embeddings
