@@ -114,6 +114,39 @@ class Model:
     def predict(self, *args, **kwargs):
         pass
 
+    def str_process(self, str_input, pad_word,
+                    unk_word, word2id):
+        """Pre-process single string input.
+
+        Args:
+            str_input: str, single string input.
+            pad_word: str, padding word.
+            unk_word: str, substitute for unknown words.
+            word2id: dict, translation table for translating string word to
+                numeric id.
+
+        Returns:
+            tensor_str_input: tensor, processed string ready for prediction.
+        """
+        # Pad/crop the string
+        if len(str_input) > self.comment_length:
+            str_input = str_input[self.comment_length]
+        elif len(str_input) < self.comment_length:
+            str_input = str_input + pad_word * (self.comment_length - len(str_input))
+
+        translated_str_input = []
+        for entry in str_input:
+            try:
+                translated_entry = word2id[entry]
+            except KeyError:
+                translated_entry = word2id[unk_word]
+            translated_str_input.append(translated_entry)
+
+        tensor_str_input = tf.convert_to_tensor(translated_str_input)
+        tensor_str_input = tf.expand_dims(tensor_str_input, axis=0)
+
+        return tensor_str_input
+
     @property_wrap('_prediction')
     def prediction(self):
         self._prediction = self._network()
