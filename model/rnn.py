@@ -57,14 +57,13 @@ class ToxicityLSTM(Model):
             inputs: Tensor, input to network.
 
         Returns:
-            Tensor, concatenated outputs from the network.
+            outputs: tuple, forward and backward tensors.
         """
         outputs, _ = tf.nn.bidirectional_dynamic_rnn(
             cell_fw=cell_fw, cell_bw=cell_bw,
             initial_state_fw=init_state_fw, initial_state_bw=init_state_bw,
             sequence_length=sequence_length, inputs=inputs
         )
-        outputs = tf.concat(outputs, 2)
         return outputs
 
     def _network(self, x_input, len_sequence,
@@ -110,11 +109,11 @@ class ToxicityLSTM(Model):
                                             keep_prob=keep_prob, peepholes=peepholes)
                 init_state_fw = cell_fw.zero_state(batch_size=batch_size, dtype=tf.float32)
                 init_state_bw = cell_fw.zero_state(batch_size=batch_size, dtype=tf.float32)
-                outputs = self._create_birnn(cell_fw=cell_fw, cell_bw=cell_bw,
-                                             init_state_fw=init_state_fw, init_state_bw=init_state_bw,
-                                             sequence_length=sequence_length, inputs=x_input)
+                output_fw, output_bw = self._create_birnn(cell_fw=cell_fw, cell_bw=cell_bw,
+                                                          init_state_fw=init_state_fw, init_state_bw=init_state_bw,
+                                                          sequence_length=sequence_length, inputs=x_input)
 
-                outputs = tf.reshape(outputs, [-1, state_size * 2])
+                outputs = tf.stack([output_fw, output_fw], axis=1)
             else:
                 weights = tf.get_variable(shape=[state_size, num_classes],
                                           initializer=tf.random_normal_initializer(),
