@@ -113,7 +113,7 @@ class ToxicityLSTM(Model):
                                                           init_state_fw=init_state_fw, init_state_bw=init_state_bw,
                                                           sequence_length=sequence_length, inputs=x_input)
 
-                outputs = tf.stack([output_fw, output_fw], axis=1)
+                outputs = tf.stack([output_fw, output_bw], axis=-1)
             else:
                 weights = tf.get_variable(shape=[state_size, num_classes],
                                           initializer=tf.random_normal_initializer(),
