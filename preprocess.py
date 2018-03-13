@@ -402,7 +402,7 @@ def split_data(file_dir, file_name, test_size=0.2):
 
 
 def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
-                          limit=30000, skip_header=1, save_dict=True):
+                          limit=60000, skip_header=1, save_dict=True):
     """ Extract vocabulary and embeddings from pre trained embedding file.
 
     Args:
