@@ -181,12 +181,14 @@ def train_lstm(csvs, vocab_size=18895, batch_size=256,
                comment_length=60, verbose_freq=200, save_freq=1000,
                word_vector_meta=None, meta=None, log_dir=None,
                model_dir=None, metadata=None, vector_file=None,
-               peepholes=False, bi=True, num_layers=2, attention=False):
+               peepholes=False, bi=True, num_layers=2,
+               attention=False, learning_rate=5e-5):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
                          num_epochs=num_epochs, vocab_size=vocab_size,
                          embedding_size=embedding_size, num_labels=num_labels,
                          comment_length=comment_length, peepholes=peepholes,
-                         bi=bi, num_layers=num_layers, attention=attention)
+                         bi=bi, num_layers=num_layers, attention=attention,
+                         learning_rate=learning_rate)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
@@ -243,6 +245,8 @@ if __name__ == '__main__':
                         help='Number of layers in lstm cell', default=2)
     parser.add_argument('--att', dest='attention', action='store_true',
                         help='Use attention model')
+    parser.add_argument('--lr', dest='learning_rate', type=float,
+                        help='Specify learning rate.', default=0.00005)
 
     args = parser.parse_args()
 
@@ -258,7 +262,7 @@ if __name__ == '__main__':
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                    word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
                    peepholes=args.peepholes, bi=args.bi, num_layers=args.num_layers,
-                   attention=args.attention)
+                   attention=args.attention, learning_rate=args.learning_rate)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
