@@ -8,7 +8,7 @@ class Model:
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None, keep_prob=0.5, learning_rate=1e-5):
+                 vec=None, keep_prob=0.5, learning_rate=1e-4):
         """
         Args:
             vocab_size: int, vocabulary size for the word embeddings.

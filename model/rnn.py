@@ -11,7 +11,7 @@ class ToxicityLSTM(Model):
                  num_labels=None, comment_length=None, testing=False,
                  vec=None, peepholes=False, bi=True,
                  keep_prob=0.5, num_layers=None, attention=False,
-                 learning_rate=1e-5):
+                 learning_rate=1e-4):
         super().__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
