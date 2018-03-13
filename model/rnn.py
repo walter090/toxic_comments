@@ -10,12 +10,13 @@ class ToxicityLSTM(Model):
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
                  vec=None, peepholes=False, bi=True,
-                 keep_prob=0.5, num_layers=None, attention=False):
+                 keep_prob=0.5, num_layers=None, attention=False,
+                 learning_rate=1e-5):
         super().__init__(
             csvs=csvs, batch_size=batch_size, num_epochs=num_epochs,
             vocab_size=vocab_size, embedding_size=embedding_size, num_labels=num_labels,
             comment_length=comment_length, testing=testing, vec=vec,
-            keep_prob=keep_prob
+            keep_prob=keep_prob, learning_rate=learning_rate
         )
         self.peepholes = peepholes
         self.bi = bi

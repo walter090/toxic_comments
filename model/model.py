@@ -8,7 +8,7 @@ class Model:
     def __init__(self, csvs=None, batch_size=None,
                  num_epochs=None, vocab_size=None, embedding_size=None,
                  num_labels=None, comment_length=None, testing=False,
-                 vec=None, keep_prob=0.5):
+                 vec=None, keep_prob=0.5, learning_rate=1e-5):
         """
         Args:
             vocab_size: int, vocabulary size for the word embeddings.
@@ -26,6 +26,7 @@ class Model:
         self.global_step = None
         self.vocab_size = vocab_size
         self.batch_size = batch_size
+        self.learning_rate = learning_rate
 
         self._embeddings = None
         self._loss = None
@@ -172,7 +173,7 @@ class Model:
     def optimize(self):
         self.global_step = tf.Variable(0, trainable=False, name='global_step')
 
-        optimizer = tf.train.AdamOptimizer(1e-4)
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         grads = optimizer.compute_gradients(self.loss)
 
         self._optimize = grads, optimizer.apply_gradients(grads_and_vars=grads,
