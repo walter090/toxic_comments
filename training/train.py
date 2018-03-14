@@ -13,7 +13,8 @@ from model.skip_gram import WordEmbedding
 
 def train(model, verbose_freq=200, save_freq=2000,
           meta=None, log_dir=None, model_dir=None,
-          metadata=None, word_vector_meta=None, word_vector_file=None):
+          metadata=None, word_vector_meta=None, word_vector_file=None,
+          vocab=60000):
     """Function for training models
 
     Args:
@@ -29,6 +30,7 @@ def train(model, verbose_freq=200, save_freq=2000,
         word_vector_file: string, path to the pre trained word vectors. Cannot
             be used with word_vector_meta; if both arguments are provided,
             word_vector_meta will be ignored.
+        vocab: int, vocabulary size.
 
     Returns:
         None
@@ -39,7 +41,7 @@ def train(model, verbose_freq=200, save_freq=2000,
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
     if word_vector_file:
-        word2id, vec = preprocess.build_vocab_from_file(word_vector_file)
+        word2id, vec = preprocess.build_vocab_from_file(word_vector_file, limit=vocab)
         model.provide_vector(vec)
 
     model_grads, model_optimization = model.optimize
@@ -155,6 +157,7 @@ def test_lstm(csvs, meta, vocab,
               peepholes, bi, batch_size=4096,
               num_epochs=1, embedding_size=300, num_layers=2,
               attention=False):
+    vocab += 2
     model = ToxicityLSTM(csvs=csvs, vocab_size=vocab, batch_size=batch_size,
                          num_epochs=num_epochs, embedding_size=embedding_size, num_labels=6,
                          comment_length=60, testing=True, peepholes=peepholes,
@@ -176,22 +179,22 @@ def train_cnn(csvs, vocab_size=18895, batch_size=512,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
 
 
-def train_lstm(csvs, vocab_size=18895, batch_size=256,
-               num_epochs=100, embedding_size=300, num_labels=6,
+def train_lstm(csvs, vocab_size=None, batch_size=256,
+               num_epochs=100, num_labels=6,
                comment_length=60, verbose_freq=200, save_freq=1000,
                word_vector_meta=None, meta=None, log_dir=None,
                model_dir=None, metadata=None, vector_file=None,
                peepholes=False, bi=True, num_layers=2,
                attention=False, learning_rate=5e-5):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
-                         num_epochs=num_epochs, vocab_size=vocab_size,
-                         embedding_size=embedding_size, num_labels=num_labels,
+                         num_epochs=num_epochs, num_labels=num_labels,
                          comment_length=comment_length, peepholes=peepholes,
                          bi=bi, num_layers=num_layers, attention=attention,
                          learning_rate=learning_rate)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
-          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
+          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file,
+          vocab=vocab_size)
 
 
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
