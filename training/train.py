@@ -48,7 +48,7 @@ def train(model, verbose_freq=200, save_freq=2000,
     model_step = model.global_step
     model_loss = model.loss
     model_auc = model.metric
-    model_embeddings = model.embeddings[0]  # 18895
+    model_embeddings = model.embeddings[0]
 
     tf.summary.scalar('loss', model_loss)
     tf.summary.scalar('AUC', model_auc)
@@ -250,6 +250,8 @@ if __name__ == '__main__':
                         help='Use attention model')
     parser.add_argument('--lr', dest='learning_rate', type=float,
                         help='Specify learning rate.', default=0.00005)
+    parser.add_argument('--vfreq', dest='verbose_freq', type=int,
+                        help='Specify verbose frequency.')
 
     args = parser.parse_args()
 
@@ -265,7 +267,7 @@ if __name__ == '__main__':
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                    word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
                    peepholes=args.peepholes, bi=args.bi, num_layers=args.num_layers,
-                   attention=args.attention, learning_rate=args.learning_rate)
+                   attention=args.attention, learning_rate=args.learning_rate, verbose_freq=args.verbose_freq)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
