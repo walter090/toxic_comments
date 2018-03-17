@@ -269,7 +269,8 @@ if __name__ == '__main__':
         train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
                   vocab_size=args.vocab_size, embedding_size=args.embedding_size, num_labels=args.num_labels,
                   comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
-                  word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector)
+                  word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
+                  args_config=args_dict)
 
     if args.mode == 'lstm':
         train_lstm(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
@@ -277,7 +278,8 @@ if __name__ == '__main__':
                    comment_length=args.comment_length, save_freq=args.save_freq, metadata=args.metadata,
                    word_vector_meta=args.word_vector_meta, meta=args.meta, vector_file=args.vector,
                    peepholes=args.peepholes, bi=args.bi, num_layers=args.num_layers,
-                   attention=args.attention, learning_rate=args.learning_rate, verbose_freq=args.verbose_freq)
+                   attention=args.attention, learning_rate=args.learning_rate, verbose_freq=args.verbose_freq,
+                   args_config=args_dict)
 
     if args.mode == 'emb':
         train_word_vectors(csvs=args.csvs, batch_size=args.batch_size,
