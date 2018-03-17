@@ -42,6 +42,8 @@ def train(model, verbose_freq=200, save_freq=2000,
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
 
     if args_config:
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         with open(os.path.join(save_dir, 'config.tsv'), 'w') as config_saver:
             config_saver.write('Arg\tValue\n')
             for key, value in args_config.items():
