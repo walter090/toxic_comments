@@ -454,3 +454,20 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
                 meta_saver.write('{}\t{}\n'.format(word, id_))
 
     return word2id, embeddings
+
+
+def quick_process(file_dir, seq_length):
+    tokenize_comments(file_dir=file_dir, file_name='train.csv',
+                      keep_stopwords=True, lower_case=True)
+
+    add_padding(file_dir=file_dir, file_name='tokenized.csv', max_length=seq_length)
+
+    word2id, embeddings = build_vocab_from_file(
+        vec_file='/home/snowman/Documents/datasets/wiki-news-300d-1M.vec', save_dict=False)
+
+    translate(file_dir=file_dir, file_name='padded.csv',
+              vocabulary=(word2id, None), max_length=seq_length,
+              translate_mode='list')
+
+    split_data(file_dir='/home/snowman/Documents/datasets/toxic',
+               file_name='translated.csv', test_size=0.05, length=seq_length)
