@@ -387,13 +387,16 @@ def _translate_comment(df, word_to_id, vocab,
             except KeyError:
                 translated_word = translation_table[unknown]
 
-            df.at[row, 'v_{}'.format(index)] = translated_word
+            df.at[row, 'v_{}'.format(index)] = int(translated_word)
 
     return df
 
 
-def split_data(file_dir, file_name, test_size=0.2):
+def split_data(file_dir, file_name, test_size=0.2, length=120):
     df = pd.read_csv(os.path.join(file_dir, file_name))
+
+    df = df.astype({'v_{}'.format(i): int for i in range(length)})
+
     df_test = df.sample(frac=test_size)
     df_train = df.drop(df_test.index)
 
