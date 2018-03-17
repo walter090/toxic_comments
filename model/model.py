@@ -96,7 +96,7 @@ class Model:
         _, value = reader.read(queue)
 
         record_defaults = record_defaults if record_defaults\
-            else [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * 60)]
+            else [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * comment_length)]
         cols = tf.decode_csv(value, record_defaults=record_defaults)
         comment_id = cols[0]
         comment_text = tf.stack(cols[-60:])
