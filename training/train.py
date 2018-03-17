@@ -14,7 +14,7 @@ from model.skip_gram import WordEmbedding
 def train(model, verbose_freq=200, save_freq=2000,
           meta=None, log_dir=None, model_dir=None,
           metadata=None, word_vector_meta=None, word_vector_file=None,
-          vocab=60000):
+          vocab=60000, args_config=None):
     """Function for training models
 
     Args:
@@ -31,6 +31,7 @@ def train(model, verbose_freq=200, save_freq=2000,
             be used with word_vector_meta; if both arguments are provided,
             word_vector_meta will be ignored.
         vocab: int, vocabulary size.
+        args_config: dict, network configuration.
 
     Returns:
         None
@@ -39,6 +40,12 @@ def train(model, verbose_freq=200, save_freq=2000,
     save_dir = os.path.abspath(os.path.join(os.path.curdir, 'models_and_visual', timestamp))
     log_dir = os.path.join(save_dir, 'tensorboard') if not log_dir else log_dir
     model_dir = os.path.join(save_dir, 'saved_models') if not model_dir else model_dir
+
+    if args_config:
+        with open(os.path.join(save_dir, 'config.tsv'), 'w') as config_saver:
+            config_saver.write('Arg\tValue\n')
+            for key, value in args_config.items():
+                config_saver.write('{}\t{}\n'.format(key, value))
 
     if word_vector_file:
         word2id, vec = preprocess.build_vocab_from_file(word_vector_file, limit=vocab)
@@ -169,14 +176,16 @@ def train_cnn(csvs, vocab_size=18895, batch_size=512,
               num_epochs=150, embedding_size=100, num_labels=6,
               comment_length=60, verbose_freq=200, save_freq=2000,
               word_vector_meta=None, meta=None, log_dir=None,
-              model_dir=None, metadata=None, vector_file=None):
+              model_dir=None, metadata=None, vector_file=None,
+              args_config=None):
     model = ToxicityCNN(csvs=csvs, batch_size=batch_size,
                         num_epochs=num_epochs, vocab_size=vocab_size,
                         embedding_size=embedding_size, num_labels=num_labels,
                         comment_length=comment_length)
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
-          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file)
+          metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file,
+          args_config=args_config)
 
 
 def train_lstm(csvs, vocab_size=None, batch_size=256,
@@ -185,7 +194,7 @@ def train_lstm(csvs, vocab_size=None, batch_size=256,
                word_vector_meta=None, meta=None, log_dir=None,
                model_dir=None, metadata=None, vector_file=None,
                peepholes=False, bi=True, num_layers=2,
-               attention=False, learning_rate=5e-5):
+               attention=False, learning_rate=5e-5, args_config=None):
     model = ToxicityLSTM(csvs=csvs, batch_size=batch_size,
                          num_epochs=num_epochs, num_labels=num_labels,
                          comment_length=comment_length, peepholes=peepholes,
@@ -194,7 +203,7 @@ def train_lstm(csvs, vocab_size=None, batch_size=256,
     train(model=model, verbose_freq=verbose_freq, save_freq=save_freq,
           meta=meta, log_dir=log_dir, model_dir=model_dir,
           metadata=metadata, word_vector_meta=word_vector_meta, word_vector_file=vector_file,
-          vocab=vocab_size)
+          vocab=vocab_size, args_config=args_config)
 
 
 def train_word_vectors(csvs, vocab_size=18895, batch_size=2000,
@@ -254,6 +263,7 @@ if __name__ == '__main__':
                         help='Specify verbose frequency.')
 
     args = parser.parse_args()
+    args_dict = vars(args)
 
     if args.mode == 'cnn':
         train_cnn(csvs=args.csvs, batch_size=args.batch_size, num_epochs=args.num_epochs,
