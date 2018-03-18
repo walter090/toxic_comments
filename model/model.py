@@ -99,7 +99,7 @@ class Model:
             else [[''], [''], [0], [0], [0], [0], [0], [0], *([[-3]] * comment_length)]
         cols = tf.decode_csv(value, record_defaults=record_defaults)
         comment_id = cols[0]
-        comment_text = tf.stack(cols[-60:])
+        comment_text = tf.stack(cols[-comment_length:])
         toxicity = tf.stack(cols[2:8])
 
         min_after_dequeue = 10000
