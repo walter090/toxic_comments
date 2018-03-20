@@ -14,7 +14,7 @@ def save_model(save_dir, bi, num_layers,
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    x_input = tf.placeholder(dtype=tf.float32, shape=(1, sentence_len),
+    x_input = tf.placeholder(dtype=tf.int32, shape=(1, sentence_len),
                              name='x_input')
     word2id, embeddings = preprocess.build_vocab_from_file(vector_file,
                                                            limit=vocab_size,
