@@ -7,9 +7,10 @@ import preprocess
 from model.rnn import ToxicityLSTM
 
 
-def save_model(save_dir, meta, bi, num_layers,
+def save_model(save_dir, bi, num_layers,
                attention, peepholes, sentence_len,
-               num_labels, vector_file, vocab_size):
+               num_labels, vector_file, vocab_size,
+               checkpoint_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -30,11 +31,13 @@ def save_model(save_dir, meta, bi, num_layers,
 
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
+    saver = tf.train.Saver()
+
     with tf.Session() as sess:
         sess.run(init_op)
 
-        saver = tf.train.Saver()
-        saver.restore(sess=sess, save_path=meta)
+        checkpoints = tf.train.get_checkpoint_state(checkpoint_dir)
+        saver.restore(sess=sess, save_path=checkpoints)
 
         builder = tf.saved_model.builder.SavedModelBuilder(save_dir)
 
@@ -62,7 +65,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--dir', dest='save_dir', required=True,
                         help='Directory to save the model.')
-    parser.add_argument('--meta', dest='meta', required=True,
+    parser.add_argument('--ckpt', dest='checkpoint_dir', required=True,
                         help='File name for meta file.')
     parser.add_argument('--bi', dest='bi', action='store_true',
                         help='Use flag to indicate that the model is bidirectional')
@@ -83,7 +86,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    save_model(save_dir=args.save_dir, meta=args.meta, bi=args.bi,
+    save_model(save_dir=args.save_dir, checkpoint_dir=args.checkpoint_dir, bi=args.bi,
                num_layers=args.num_layers, attention=args.attention, peepholes=args.peepholes,
                sentence_len=args.sentence_len, num_labels=args.num_labels, vector_file=args.vector_file,
                vocab_size=args.vocab_size)
