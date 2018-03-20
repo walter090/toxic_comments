@@ -78,9 +78,12 @@ if __name__ == '__main__':
                         help='Number of labels')
     parser.add_argument('--vector', dest='vector_file', required=True,
                         help='Word vector file.')
+    parser.add_argument('--vocab', dest='vocab_size', required=True,
+                        help='Set vocabulary size')
 
     args = parser.parse_args()
 
     save_model(save_dir=args.save_dir, meta=args.meta, bi=args.bi,
                num_layers=args.num_layers, attention=args.attention, peepholes=args.peepholes,
-               sentence_len=args.sentence_len, num_labels=args.num_labels, vector_file=args.vector_file)
+               sentence_len=args.sentence_len, num_labels=args.num_labels, vector_file=args.vector_file,
+               vocab_size=args.vocab_size)
