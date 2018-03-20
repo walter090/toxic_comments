@@ -11,9 +11,6 @@ def save_model(save_dir, bi, num_layers,
                attention, peepholes, sentence_len,
                num_labels, vector_file, vocab_size,
                checkpoint_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
     x_input = tf.placeholder(dtype=tf.int32, shape=(1, sentence_len),
                              name='x_input')
     word2id, embeddings = preprocess.build_vocab_from_file(vector_file,
@@ -37,8 +34,7 @@ def save_model(save_dir, bi, num_layers,
     with tf.Session() as sess:
         sess.run(init_op)
 
-        checkpoints = tf.train.get_checkpoint_state(checkpoint_dir)
-        saver.restore(sess=sess, save_path=checkpoints)
+        saver.restore(sess=sess, save_path=checkpoint_dir)
 
         builder = tf.saved_model.builder.SavedModelBuilder(save_dir)
 
