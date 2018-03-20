@@ -77,9 +77,9 @@ if __name__ == '__main__':
     parser.add_argument('--peep', dest='peepholes', action='store_true',
                         help='Indicate the model uses peepholes')
     parser.add_argument('--len', dest='sentence_len', required=True,
-                        help='Length of each sequence')
+                        help='Length of each sequence', type=int)
     parser.add_argument('--label', dest='num_labels', required=True,
-                        help='Number of labels')
+                        help='Number of labels', type=int)
     parser.add_argument('--vector', dest='vector_file', required=True,
                         help='Word vector file.')
     parser.add_argument('--vocab', dest='vocab_size', required=True,
