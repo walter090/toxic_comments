@@ -3,7 +3,7 @@
 CNN and LSTM models for text classification. The model is tested on a multi-label 
 classification task with Wikimedia comments dataset. The model achieved an 
 AUROC of 0.896 with randomly initialized word embeddings; using FastText, 
-the AUC is 0.972 with Kim Yoon's CNN, and 0.982 with a stacked LSTM with attention.
+the AUC is 0.972 with Kim Yoon's CNN, and 0.983 with a stacked LSTM with attention.
 
 ### Usage
 To train with default layer configurations
