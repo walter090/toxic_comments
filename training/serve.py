@@ -28,6 +28,7 @@ def save_model(save_dir, bi, num_layers,
                          bi=bi, num_layers=num_layers,
                          attention=attention, peepholes=peepholes)
     model.comment_batch = x_input
+    prediction = model.prediction
 
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
@@ -43,7 +44,7 @@ def save_model(save_dir, bi, num_layers,
 
         legacy_init_op = tf.tables_initializer()
         input_info = tf.saved_model.utils.build_tensor_info(x_input)
-        output_info = tf.saved_model.utils.build_tensor_info(model.prediction[-1])
+        output_info = tf.saved_model.utils.build_tensor_info(prediction[-1])
 
         builder.add_meta_graph_and_variables(
             sess=sess, tags=[tf.saved_model.tag_constants.SERVING],
