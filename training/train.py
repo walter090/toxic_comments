@@ -165,13 +165,13 @@ def test_cnn(csvs, meta, vocab, batch_size=516,
 def test_lstm(csvs, meta, vocab,
               peepholes, bi, batch_size=4096,
               num_epochs=1, embedding_size=300, num_layers=2,
-              attention=False, comment_length=None):
+              attention=False, comment_length=None, verbose_freq=20):
     vocab += 2
     model = ToxicityLSTM(csvs=csvs, vocab_size=vocab, batch_size=batch_size,
                          num_epochs=num_epochs, embedding_size=embedding_size, num_labels=6,
                          comment_length=comment_length, testing=True, peepholes=peepholes,
                          bi=bi, num_layers=num_layers, attention=attention)
-    test(model, meta=meta)
+    test(model, meta=meta, verbose_freq=verbose_freq)
 
 
 def train_cnn(csvs, vocab_size=18895, batch_size=512,
@@ -299,4 +299,4 @@ if __name__ == '__main__':
                   num_epochs=args.num_epochs, embedding_size=args.embedding_size,
                   vocab=args.vocab_size, peepholes=args.peepholes, bi=args.bi,
                   num_layers=args.num_layers, attention=args.attention,
-                  comment_length=args.comment_length)
+                  comment_length=args.comment_length, verbose_freq=args.verbose_freq)
