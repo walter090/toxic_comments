@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument('--bi', dest='bi', action='store_true',
                         help='Use flag to indicate that the model is bidirectional')
     parser.add_argument('--layers', dest='num_layers', required=True,
-                        help='Number of stacked layers in the model.')
+                        help='Number of stacked layers in the model.', type=int)
     parser.add_argument('--att', dest='attention', action='store_true',
                         help='Indicate the model uses attention.')
     parser.add_argument('--peep', dest='peepholes', action='store_true',
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('--vector', dest='vector_file', required=True,
                         help='Word vector file.')
     parser.add_argument('--vocab', dest='vocab_size', required=True,
-                        help='Set vocabulary size')
+                        help='Set vocabulary size', type=int)
 
     args = parser.parse_args()
 
