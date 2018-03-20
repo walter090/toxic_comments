@@ -9,13 +9,15 @@ from model.rnn import ToxicityLSTM
 
 def save_model(save_dir, meta, bi, num_layers,
                attention, peepholes, sentence_len,
-               num_labels, vector_file):
+               num_labels, vector_file, vocab_size):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
     x_input = tf.placeholder(dtype=tf.float32, shape=(1, sentence_len),
                              name='x_input')
-    word2id, embeddings = preprocess.build_vocab_from_file(vector_file, save_dict=False)
+    word2id, embeddings = preprocess.build_vocab_from_file(vector_file,
+                                                           limit=vocab_size,
+                                                           save_dict=False)
     vocab_size, emb_size = len(embeddings), len(embeddings[0])
 
     model = ToxicityLSTM(comment_length=sentence_len, vocab_size=vocab_size,
