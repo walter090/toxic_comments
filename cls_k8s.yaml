@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cls-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cls-server
+    spec:
+      containers:
+      - name: cls-container
+        image: gcr.io/tensorflow-serving-cls/cls:latest
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - /serving/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server
+          --port=9000 --model_name=cls --model_base_path=/serving/toxic_output
+        ports:
+        - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: cls-service
+  name: cls-service
+spec:
+  ports:
+  - port: 9000
+    targetPort: 9000
+  selector:
+    app: cls-server
+  type: LoadBalancer
