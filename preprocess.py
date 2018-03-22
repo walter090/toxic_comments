@@ -453,6 +453,9 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
             for word, id_ in word2id.items():
                 meta_saver.write('{}\t{}\n'.format(word, id_))
 
+        with open(os.path.join('metadata', 'word2id.pickle'), 'wb') as meta_saver:
+            pickle.dump(word2id, meta_saver, pickle.HIGHEST_PROTOCOL)
+
     return word2id, embeddings
 
 
