@@ -4,6 +4,7 @@ import time
 from argparse import ArgumentParser
 
 import nltk
+import numpy as np
 
 from grpc.beta import implementations
 from tensorflow.contrib.util import make_tensor_proto
@@ -60,6 +61,9 @@ def main():
 
     if len(data) < 40:
         data += [word2id['<pad>']] * (40 - len(data))
+
+    data = np.expand_dims(data, axis=0)
+    data = data.astype(np.int32)
 
     channel = implementations.insecure_channel(host, int(port))
     stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
