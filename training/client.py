@@ -1,3 +1,4 @@
+import pickle
 import string
 import time
 from argparse import ArgumentParser
@@ -34,7 +35,10 @@ def parse_args():
 
 
 def main():
-    host, port, text, word2id = parse_args()
+    host, port, text, word2id_dir = parse_args()
+
+    with open(word2id_dir, 'rb') as reader:
+        word2id = pickle.load(reader)
 
     # Process string
     # Translate string to numeric
@@ -65,8 +69,8 @@ def main():
     request = predict_pb2.PredictRequest()
 
     request.model_spec.name = 'cls'
-    request.model_spec.signature_name = 'predict_text'
-    request.inputs['text'].CopyFrom(make_tensor_proto(data))
+    request.model_spec.signature_name = 'prediction'
+    request.inputs['sentence'].CopyFrom(make_tensor_proto(data))
 
     result = stub.Predict(request, 60.0)
 
