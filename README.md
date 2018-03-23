@@ -20,6 +20,13 @@ To train with a pre trained word vector file, use the 'vector' flag:
 python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode lstm --vector fasttext.vec
 ```
 You can also optionally add a tsv metadata file for TensorBoard projector using the `metadata` flag.
+
+#### Use Deployed model
+Make requests to the deployed saved model:
+```bash
+python training/client.py --server 35.227.88.30:9000 -d "metadata/word2id.pickle" -t "Enter your potential abusive text here."
+```
+
 ### Custom CNN layers
 You can also change the layer configuration if you decide to write your 
 own code for training and testing, by providing values to `layer_config` 
