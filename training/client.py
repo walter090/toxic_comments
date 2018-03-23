@@ -61,6 +61,8 @@ def main():
 
     if len(data) < 40:
         data += [word2id['<pad>']] * (40 - len(data))
+    else:
+        data = data[:40]
 
     data = np.expand_dims(data, axis=0)
     data = data.astype(np.int32)
