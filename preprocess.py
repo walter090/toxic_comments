@@ -13,7 +13,7 @@ from nltk.corpus import stopwords
 
 def tokenize_comments(file_dir, file_name, chunk_size=20000,
                       new_dir=None, new_name='tokenized.csv', lower_case=True,
-                      keep_stopwords=False):
+                      keep_stopwords=False, keep_punc=True):
     """Tokenize the comment texts and remove the punctuations in the csv file.
     In case of a large file, process the file in chunks and append
     the chunks to new file.
@@ -26,6 +26,7 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
         new_dir: dict, directory to save the new file to.
         lower_case: boolean, set True to convert all words to lower case.
         keep_stopwords: boolean, set True to keep stopwords in document.
+        keep_punc: boolean, set True to keep punctuation.
 
     Returns:
         New file location
@@ -34,7 +35,8 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
     new_dir = os.path.join(file_dir, new_dir) if new_dir else file_dir
 
     punctuations = list(string.punctuation)
-    punctuations += ['``', "''"]
+    quotes = ['``', "''"]
+    punctuations += quotes
 
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
@@ -47,7 +49,9 @@ def tokenize_comments(file_dir, file_name, chunk_size=20000,
             except TypeError:
                 continue
             word_list = [word if not lower_case else word.lower() for word in word_list if
-                         word not in punctuations and (keep_stopwords or word not in stopwords.words())]
+                         (keep_punc or word not in punctuations) and
+                         (keep_stopwords or word not in stopwords.words()) and
+                         (word not in quotes)]
             chunk.at[row, 'comment_text'] = ' '.join(word_list)
 
         if index == 0:
