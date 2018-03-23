@@ -6,6 +6,8 @@ AUROC of 0.896 with randomly initialized word embeddings; using FastText,
 the AUC is 0.972 with Kim Yoon's CNN, and 0.983 with a stacked LSTM with attention.
 
 ### Usage
+
+#### Training
 To train with default layer configurations
 ```bash
 python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode cnn
