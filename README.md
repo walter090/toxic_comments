@@ -28,6 +28,30 @@ Make requests to the deployed saved model:
 ```bash
 python training/client.py --server 35.227.88.30:9000 -d "metadata/word2id.pickle" -t "Enter your potential abusive text here."
 ```
+Output is a JSON file:
+```json
+outputs {
+  key: "output"
+  value {
+    dtype: DT_FLOAT
+    tensor_shape {
+      dim {
+        size: 1
+      }
+      dim {
+        size: 6
+      }
+    }
+    float_val: 1.0
+    float_val: 0.0
+    float_val: 1.0
+    float_val: 0.0
+    float_val: 0.0
+    float_val: 0.0
+  }
+}
+```
+Each of the six `float_val`s represents toxic, severe_toxic, obscene, threat, insult, identity_hate.
 
 ### Custom CNN layers
 You can also change the layer configuration if you decide to write your 
