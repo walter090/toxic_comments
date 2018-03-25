@@ -29,7 +29,7 @@ Make requests to the deployed saved model:
 python training/client.py --server 35.227.88.30:9000 -d "metadata/word2id.pickle" -t "Enter your potential abusive text here."
 ```
 Output is a JSON file:
-```json
+```
 outputs {
   key: "output"
   value {
