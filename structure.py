@@ -206,7 +206,7 @@ def weigh_attention(source_hidden, target_hidden=None, name='attention_score'):
                                             initializer=tf.random_normal_initializer())
 
         weights = tf.get_variable(name='weights',
-                                  shape=[source_hidden.get_shape().as_list()[-1], 1],
+                                  shape=[source_hidden.get_shape().as_list()[-2], 1],
                                   initializer=tf.truncated_normal_initializer())
 
         weighed_hidden = tf.multiply(source_hidden, weights)
