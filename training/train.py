@@ -262,7 +262,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', dest='learning_rate', type=float,
                         help='Specify learning rate.', default=0.00005)
     parser.add_argument('--vfreq', dest='verbose_freq', type=int,
-                        help='Specify verbose frequency.')
+                        help='Specify verbose frequency.', default=100)
 
     args = parser.parse_args()
     args_dict = vars(args)
