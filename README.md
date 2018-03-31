@@ -23,7 +23,7 @@ python training/train.py --data dataset.csv --vocab 30000 --embedding 300 --mode
 ```
 You can also optionally add a tsv metadata file for TensorBoard projector using the `metadata` flag.
 
-#### Use Deployed model
+#### Use Deployed example model trained on Wikimedia dataset
 Make requests to the deployed saved model:
 ```bash
 python training/client.py --server 35.227.88.30:9000 -d "metadata/word2id.pickle" -t "Enter your potential abusive text here."
