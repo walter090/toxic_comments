@@ -464,6 +464,16 @@ def build_vocab_from_file(vec_file, pad='<pad>', unknown='<unk>',
 
 
 def quick_process(file_dir, seq_length):
+    """ Default method for preprocessing WikiMedia dataset.
+    Call it and forget it.
+
+    Args:
+        file_dir: string, dir to csv file.
+        seq_length: string, length of each sequence after processing.
+
+    Returns:
+        None.
+    """
     tokenize_comments(file_dir=file_dir, file_name='train.csv',
                       keep_stopwords=True, lower_case=True)
 
